@@ -1,15 +1,16 @@
-![logo](https://github.com/tylerdiaz/Heisenberg/blob/master/brand-assests/ProjectHeisenberg.PNG)
+<b>Note:</b> This project is a fork that fixes bugs in the outdated "eth-prescriptions" and enables it to work with latest MetaMask and Solidity versions. Truffle was added for simplified contract development and the contract is covered with JavaScript tests.
+Further enhancements to the original project's functionality are planned.  
 
-# Project Heisenberg
+# eth-prescriptions - Decentralized medical prescriptions on Ethereum
 
-<b>Project Heisenberg</b> is a decentralized identity management and pharmaceutical ERP system built atop a permissioned Ethereum consortium network.  This project implements a non-fungible token standard to completely eliminate the <i>risk</i> and <i>implicit costs</i> associated with pharmaceutical script fraud.
-
+<b>eth-prescriptions</b> is a decentralized identity management and pharmaceutical ERP system built atop a permissioned Ethereum consortium network.  This project implements a non-fungible token standard to completely eliminate the <i>risk</i> and <i>implicit costs</i> associated with pharmaceutical script fraud.
+g
 By creating a decentralized smart-contract standard that defines the method for ownership and transferability of a pharmaceutical script we:
   1. <b>Remove</b> the possibility of counterfeit/forged prescriptions is eliminated
   2. <b>Enable</b> regulatory insight into the quantity, concentration, movement, etc. of drugs
   3. <b>Create</b> an <i>immutable</i> record of the movement, quantity, and RX type of pharmacy scripts
   
-Project Heisenberg accomplishes this goal through the tokenization of pharmaceutical prescriptions into an ERC-721 solidity contract standard.  This non-fungible token carries metadata describing the doctor ID, the patient's public key, the drug RX Id, and the unit quantity to be dispensed.
+eth-prescriptions accomplishes this goal through the tokenization of pharmaceutical prescriptions into an ERC-721 solidity contract standard.  This non-fungible token carries metadata describing the doctor ID, the patient's public key, the drug RX Id, and the unit quantity to be dispensed.
 
 
 ## Users, Roles, and Actions
@@ -19,19 +20,14 @@ The defined roles for this project scenario are as follows:
   2. <b>Patient</b> - Receives a token representing a valid prescription issued by a Doctor. Fills a prescription at an authorized Pharmacy by sending token to the Pharmacy's public wallet.
   3. <b>Pharmacy</b> - Disburses medication after receiving token from a Patient, and is payment-agnostic as to receiving token or fiat currency as payment for prescription. Verifies a valid prescription by checking the permission blockchain for a signature between the Patient and Doctor.
     
- ![Flow](https://github.com/tylerdiaz/Heisenberg/blob/master/brand-assests/Token%20issuance%20and%20prescription%20flow%20chart.png)
+ ![Flow](https://github.com/sigma67/eth-prescriptions/blob/master/brand-assests/Token%20issuance%20and%20prescription%20flow%20chart.png)
  
 Regulatory bodies with read-only access to the ledger may be considerded to be a "fourth role".  To ensure this, these agents would not host mining nodes or contract-addresses.
  
 ## Blockchain Network Architecture
-<b>Project Heisenberg</b> is hosted on an Ethereum Consortium Network and is permissioned by a custom JSON genesis file.  The network id for peering is 347329323.  For this implementation, we configured five consortium members hosting nodes, with one hosted mining node per member.  We prefunded the addresses with ether to remove the bottleneck associated with gas scarcity (i.e. DDoS is not a risk in a trusted consortium). 
+<b>eth-prescriptions</b> is hosted on an Ethereum Consortium Network and is permissioned by a custom JSON genesis file.  The network id for peering is 347329323.  For this implementation, we configured five consortium members hosting nodes, with one hosted mining node per member.  We prefunded the addresses with ether to remove the bottleneck associated with gas scarcity (i.e. DDoS is not a risk in a trusted consortium). 
 
 In full production, the nodes would be maintained by entities pre-authorized by an accredited regulatory body - ie.e public hospitals, government agencies, etc. The physical location of these nodes would be irrelevant (i.e. they could be hosted in a cloud environment or on-premise)
-
-A diagram of the azure-hosted architecture is shown below:
-
-
-![ConsortiumArchitecture](https://github.com/tylerdiaz/Heisenberg/blob/master/brand-assests/Ethereum%20Consortium%20Architecture.PNG)
 
 
 ## Consortium Rationale
@@ -40,7 +36,7 @@ The rationale for choosing a Consortium Network architecture over the Public Mai
   1. <b>Cost</b> - network actors are able to decouple from the price of ether and avoid the gas fees associated with mainnet transactions
   2. <b>Permissioned Privacy</b> - Only approved entities are able host a node and gain access the state history of the blockchain.  This provides a choke-point layer of protection which guards the integrity of participant data from the public, while still allowing regulatory insight, auditability, etc.
   3. <b>Transaction Throughput</b> - a consortium architectural approach allows us to scale independently of mainnet, and avoid the associated TPS bottlenecks, etc.
-![exampleflow](https://github.com/tylerdiaz/Heisenberg/blob/master/brand-assests/consortiumRationale.PNG)
+![exampleflow](https://github.com/sigma67/eth-prescriptions/blob/master/brand-assests/consortiumRationale.PNG)
 
 
 ## Problems associated with the script fulfillment process
@@ -78,7 +74,7 @@ By eliminating moral hazard, or the risk that a party has not entered into the c
 ## PrescriptionNFT.sol - Under the Hood
 
 The PrescriptionNFT.sol file is a solidity smart-contract which formalizes the tokenization of the pharmaceutical script.  The token takes an input from a doctor, which gets formalized as metadata.  These inputs are:
-  1. Doctor ID - which is given to him by the CA, 
+  1. Doctor - ETH address of a doctor 
   2. Patient Public Key - of the Patient which acts as a verifying mechanism for the pharmacist to prevent dishonest transfer
   3. Medication Name - the name of the pharmaceutical
   4. Brand Name - the specific brand of the pharmaceutical
@@ -88,16 +84,11 @@ The PrescriptionNFT.sol file is a solidity smart-contract which formalizes the t
   8. Total Amount - the total amount of pills to be dispensed by the pharmacist to the patient
   9. Expiration Date - the date in which the prescription expires.  We check against the expiration date when the patient tries to fill the prescription
 
-The code for the non-fungible ERC-721 token, PerscriptionNFT.sol is hosted here [link.](https://github.com/tylerdiaz/Heisenberg/blob/master/contract/token/PrescriptionNFT.sol)
+The code for the non-fungible ERC-721 token, PrescriptionNFT.sol is hosted here [link.](https://github.com/sigma67/eth-prescriptions/blob/master/contract/token/PrescriptionNFT.sol)
 
 
-## Conclusion
-We are excited to announce that after 24 hours of deep focus and dedication, we are happy to announce that Project Heisenberg is successfully up and running — and available for use for Doctors, Patients, and Pharmacists.
+## Development
 
-Three separate portals (one for each predefined role) have been developed as a web app for doctors, patients, and pharmacists.  The interface leverages the ReactJS framework and pulls methods from the Web3.JS library to interact with the blockchain through the ABI.  
+It is recommended to use Truffle and Ganache for simplified development. 
 
-To access the application, download the [Metamask extension](https://github.com/MetaMask), create an account, and visit the following addresses: 
-  * <b>Doctor Portal</b> [Link.](http://34.201.43.128:3000/)
-  * <b>Patient Portal</b> [Link.](http://34.201.43.128:3001/)
-  * <b>Pharmacist Portal</b> [Link.](http://34.201.43.128:3001/)
-
+Metamask is required as a Web3 provider when trying out the user interfaces. 

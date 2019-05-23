@@ -1,21 +1,23 @@
-pragma solidity ^0.4.18;
-//pragma experimental ABIEncoderV2;
+pragma solidity ^0.5.7;
+pragma experimental ABIEncoderV2;
 import "./ERC721.sol";
 import "./SafeMath.sol";
 
 /**
- * Notes: 
- * @title PrescrioptionNFT
- * Prescrioption Non-Fungible Token implementation for the required functionality of the ERC721 standard
+ * Notes:
+ * @title PrescriptionNFT
+ * Prescription Non-Fungible Token implementation for the required functionality of the ERC721 standard
  *
  */
-contract PrescrioptionNFT is ERC721 {
+contract PrescriptionNFT is ERC721 {
   using SafeMath for uint256;
+
+  address public owner;
 
   struct PrescriptionMetadata {
     //Doctor ID that sent this prescription
     //This is the ID that is given to verified doctors by the CA
-    uint256 doctorId;
+    address doctor;
     //Doctor ID that sent this prescription
     //This is the ID that is given to verified doctors by the CA
     address prescribedPatient;
@@ -29,7 +31,7 @@ contract PrescrioptionNFT is ERC721 {
     string dosageUnit;
     //Number of pills to give in the prescription
     uint8 numPills;
-    //Epoch time when the preciption was given (mint time)
+    //Epoch time when the prescription was given (mint time)
     uint256 dateFilled;
     //Epoch expiration date (When is this prescription no longer valid)
     uint256 expirationTime;
@@ -40,11 +42,9 @@ contract PrescrioptionNFT is ERC721 {
     address owner;
   }
 
-  //unfortuantely there's no real great Set<> in solidity (that I've found)
-  //So we'll just create a struct to replicate this
+  //metadata for a Doctor
   struct Doctor {
-    //This is the uuid assigned to the verified doctor by the CA
-    uint256 doctorId;
+    string name;
     bool isValid;
   }
 
@@ -55,10 +55,10 @@ contract PrescrioptionNFT is ERC721 {
    *  Mappings 
    */
   //Map of the certified doctors Map<tokenId, Prescription>  
-  mapping (uint256 => Prescription) private prescriptions;
+  mapping (uint256 => Prescription) public prescriptions;
 
-  //Map of the certified doctors Map<doctorID, Doctor>
-  mapping (uint256 => Doctor) private approvedDoctors;
+  //Map of the certified doctors Map<address, Doctor>
+  mapping (address => Doctor) public approvedDoctors;
   
   // Mapping from owner to list of owned token IDs
   //May make this a map of maps: Map<address, tokenIds[]>
@@ -70,16 +70,16 @@ contract PrescrioptionNFT is ERC721 {
  
   /**
    * @dev NFT Constructor
-   *    Create a new PrescrioptionNFT with doctors that have already been approved
+   *    Create a new PrescriptionNFT with doctors that have already been approved
    *    The contract should be preloaded with gas 
    */
-  function PrescrioptionNFT(uint256[] doctorIdsToApprove) public payable {
+  constructor (address[] memory doctorAddresses, string[] memory doctorNames) public payable {
+      owner = msg.sender;
+      require(doctorAddresses.length == doctorNames.length);
       // For each of the provided certified doctors,
       // set that doctors credentials to valid
-      for (uint i = 0; i < doctorIdsToApprove.length; i++) {
-          uint256 doctorToApprove = doctorIdsToApprove[i];
-          approvedDoctors[doctorToApprove].doctorId = doctorToApprove;
-          approvedDoctors[doctorToApprove].isValid = true;
+      for (uint i = 0; i < doctorAddresses.length; i++) {
+          approvedDoctors[doctorAddresses[i]] = Doctor(doctorNames[i], true);
       }
   }
 
@@ -90,12 +90,19 @@ contract PrescrioptionNFT is ERC721 {
 
   /**
   * @dev Approve a given doctor UUID. This will only be called by the CA
-  * @param _doctorToApprove uintuint256 ID of doctor to approve for giving prescriptions
+  * @param _doctorToApprove uint256 ID of doctor to approve for giving prescriptions
   */
-  function approveDoctor(uint256 _doctorToApprove) public payable {
+  function approveDoctor(address _doctorToApprove, string memory _name) public payable onlyOwner {
       // set that doctor's credentials to valid
-      approvedDoctors[_doctorToApprove].doctorId = _doctorToApprove;
-      approvedDoctors[_doctorToApprove].isValid = true;
+      approvedDoctors[_doctorToApprove] = Doctor(_name, true);
+  }
+
+  /**
+  * @dev Remove a given doctor UUID. This will only be called by the CA
+  * @param _doctorToRemove uint256 ID of doctor to approve for giving prescriptions
+  */
+  function removeDoctor(address _doctorToRemove) public payable onlyOwner {
+    approvedDoctors[_doctorToRemove].isValid = false;
   }
 
  /*
@@ -105,8 +112,7 @@ contract PrescrioptionNFT is ERC721 {
   /**
   * @dev Fill the Prescription with the given tokenId. This means that the user will 
   *   transfer their Prescription tokens to the pharmacy address
-  * @param _patientAddress wallet address of the patient to recieve the prescription tokens
-  * @param _doctorId uint256 ID of doctor to approve for giving prescriptions
+  * @param _patientAddress wallet address of the patient to receive the prescription tokens
   * @param _medicationName medication name
   * @param _brandName medication brand
   * @param _dosage payload per pill
@@ -116,15 +122,14 @@ contract PrescrioptionNFT is ERC721 {
   * @param _expirationTime epoch date when the token expires
   */
   function prescribe(
-    address _patientAddress, 
-    uint256 _doctorId,
-    string _medicationName,
-    string _brandName,
+    address _patientAddress,
+    string memory _medicationName,
+    string memory _brandName,
     uint8 _dosage,
-    string _dosageUnit,
+    string memory _dosageUnit,
     uint8 _numPills,
     uint256 _dateFilled,
-    uint256 _expirationTime) public payable doctorIsApproved(_doctorId) {
+    uint256 _expirationTime) public payable doctorIsApproved(msg.sender) {
       //We will start the first tokenId at 0 and essentially treat it as an index
       //the next token id will just be = to the # of tokens 
       uint256 newTokenId = totalTokens;
@@ -132,7 +137,7 @@ contract PrescrioptionNFT is ERC721 {
       //Create a new Prescription token to the chain
       //Add a new Prescription token to the chain
       prescriptions[newTokenId].metadata = PrescriptionMetadata(
-        _doctorId,
+        msg.sender,
         _patientAddress,
         _medicationName,
         _brandName,
@@ -158,13 +163,24 @@ contract PrescrioptionNFT is ERC721 {
   * @param _pharmacyAddress uint256 ID of doctor to approve for giving prescriptions
   * @param _tokenId uint256 ID of Prescription token to send 
   */
-  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public doctorIsApproved(_tokenId) hasNotExpired(_tokenId) {
+  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public
+    doctorIsApproved(prescriptions[_tokenId].metadata.doctor)
+    hasNotExpired(_tokenId) {
       transfer(_pharmacyAddress, _tokenId);
   }
 
   /*
    * Modifiers
    */
+
+  /**
+  *
+  *
+  */
+  modifier onlyOwner {
+    require(msg.sender == owner);
+    _;
+  }
 
   /**
   * @dev Guarantees prescription is not being used after its expiration date
@@ -176,11 +192,11 @@ contract PrescrioptionNFT is ERC721 {
   }
 
   /**
-  * @dev Guarantees msg.sender is patient who was actually prescribed this token
-  * @param _doctorId uint256 ID of the token to validate its ownership belongs to msg.sender
+  * @dev Guarantees that address belongs to a valid and approved doctor
+  * @param _doctor address of the token to validate its ownership belongs to msg.sender
   */
-  modifier doctorIsApproved(uint256 _doctorId) {
-    require(approvedDoctors[_doctorId].isValid);
+  modifier doctorIsApproved(address _doctor) {
+    require(approvedDoctors[_doctor].isValid);
     _;
   }
 
@@ -229,7 +245,7 @@ contract PrescrioptionNFT is ERC721 {
   * @param _owner address to query the tokens of
   * @return uint256[] representing the list of tokens owned by the passed address
   */
-  function tokensOf(address _owner) public view returns (uint256[]) {
+  function tokensOf(address _owner) public view returns (uint256[] memory) {
     return ownedTokens[_owner];
   }
 
@@ -239,9 +255,9 @@ contract PrescrioptionNFT is ERC721 {
   * @return owner address currently marked as the owner of the given token ID
   */
   function ownerOf(uint256 _tokenId) public view returns (address) {
-    address owner = prescriptions[_tokenId].owner;
-    require(owner != address(0));
-    return owner;
+    address tokenOwner = prescriptions[_tokenId].owner;
+    require(tokenOwner != address(0));
+    return tokenOwner;
   }
 
   /**
@@ -261,7 +277,7 @@ contract PrescrioptionNFT is ERC721 {
   function _mint(address _to, uint256 _tokenId) internal {
     require(_to != address(0));
     addToken(_to, _tokenId);
-    Transfer(0x0, _to, _tokenId);
+    emit Transfer(address(0), _to, _tokenId);
   }
 
   /**
@@ -277,7 +293,7 @@ contract PrescrioptionNFT is ERC721 {
 
     removeToken(_from, _tokenId);
     addToken(_to, _tokenId);
-    Transfer(_from, _to, _tokenId);
+    emit Transfer(_from, _to, _tokenId);
   }
 
   /**
@@ -308,7 +324,7 @@ contract PrescrioptionNFT is ERC721 {
     uint256 lastTokenIndex = balanceOf(_from).sub(1);
     uint256 lastToken = ownedTokens[_from][lastTokenIndex];
 
-    prescriptions[_tokenId].owner = 0;
+    prescriptions[_tokenId].owner = address(0);
     ownedTokens[_from][tokenIndex] = lastToken;
     ownedTokens[_from][lastTokenIndex] = 0;
 
