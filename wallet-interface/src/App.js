@@ -13,11 +13,20 @@ import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import {
-  Media, Table, Button,
-  Modal, ModalHeader,
-  ModalBody, ModalFooter, Form, FormGroup,
-  Label, Input
+  Button,
+  Form,
+  FormGroup,
+  Input,
+  Label,
+  Media,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Table
 } from 'reactstrap';
+
+let utils = require('./utils.js')
 
 class ModalForm extends Component {
   constructor(props) {
@@ -27,14 +36,15 @@ class ModalForm extends Component {
     };
   }
 
-  componentDidMount() {
-    const MyContract = window.web3.eth.contract([{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_tokenId","type":"uint256"}],"name":"approve","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"approvedFor","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"tokensOf","outputs":[{"name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_doctorToApprove","type":"uint256"}],"name":"approveDoctor","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_pharmacyAddress","type":"address"},{"name":"_tokenId","type":"uint256"}],"name":"fillPrescription","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_tokenId","type":"uint256"}],"name":"transfer","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"takeOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patientAddress","type":"address"},{"name":"_doctorId","type":"uint256"},{"name":"_medicationName","type":"string"},{"name":"_brandName","type":"string"},{"name":"_dosage","type":"uint8"},{"name":"_dosageUnit","type":"string"},{"name":"_dateFilled","type":"uint256"},{"name":"_expirationTime","type":"uint256"}],"name":"prescribe","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"inputs":[{"name":"doctorIdsToApprove","type":"uint256[]"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_approved","type":"address"},{"indexed":false,"name":"_tokenId","type":"uint256"}],"name":"Approval","type":"event"}]);
-
-    this.state.ContractInstance = MyContract.at("0x3F99865D325E070131a34d391E79DAB56FDf3e0E")
+  async componentDidMount() {
+    let {accounts, instance} = await utils.setupContract();
+    this.state.accounts = accounts;
+    this.state.ContractInstance = instance;
   }
 
   sendPrescription() {
     this.state.ContractInstance.prescribe(
+      this.context.web3.selectedAccount,
       this.state.formState["patient-address"],
       123, // hard-coded doctor ID.
       this.state.formState["medication-name"],
@@ -47,7 +57,7 @@ class ModalForm extends Component {
       {
         gas: 300000,
         gasPrice: 400000000000,
-        from: this.context.web3.selectedAccount,
+        from: this.state.accounts[0],
         value: 0
       },
       (err, result) => {
@@ -57,11 +67,8 @@ class ModalForm extends Component {
           this.setState({ transactionId: result });
         }
         // if (result) { this.props.toggle(); }
-      }
-    );
-
-    return false;
-  }
+      });
+    }
 
   inputUpdate(event) {
     this.setState({ formState: { ...this.state.formState, [event.target.name]: event.target.value }});
@@ -130,69 +137,45 @@ ModalForm.contextTypes = {
 class App extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       modal: false,
-      transactionLogs: [
-        // some sample transaction logs to populate the demo
-        {
-          expiryTime: new Date("3/31/18"),
-          prescribedAt: new Date("3/7/18"),
-          patientWalletAddress: "0x1a0e14c6c2d16dd42b00b4152645a8b51f2698d6",
-          medicationName: "Atorvastatin Calcium",
-          brandName: "Lipitor",
-          dosage: "120",
-          dosageUnit: "mg",
-        },
-        {
-          expiryTime: new Date("3/17/18"),
-          prescribedAt: new Date("3/2/18"),
-          patientWalletAddress: "0x1a0e14c6c2d16dd42b00b4152645a8b51f2698d6",
-          medicationName: "Omeprazole",
-          brandName: "Prilosec",
-          dosage: "20",
-          dosageUnit: "tablets",
-        },
-        {
-          expiryTime: new Date("3/31/18"),
-          prescribedAt: new Date("3/1/18"),
-          patientWalletAddress: "0x4b5d44c6c2d16cc42b00b4152645a8b51f2698d6",
-          medicationName: "Amlodipine",
-          brandName: "Norvasc",
-          dosage: "20",
-          dosageUnit: "mg",
-        },
-        {
-          expiryTime: new Date("3/15/18"),
-          prescribedAt: new Date("3/3/18"),
-          patientWalletAddress: "0x7b5d44c6c2d16dd42b00b4152645a8b51f2698d6",
-          medicationName: "Amlodipine",
-          brandName: "Norvasc",
-          dosage: "50",
-          dosageUnit: "mg",
-        },
-        {
-          expiryTime: new Date("3/12/18"),
-          prescribedAt: new Date("3/4/18"),
-          patientWalletAddress: "0x1a0e14c6c2d16dd42b00b4152645a8b51f2698d6",
-          medicationName: "Simvastatin",
-          brandName: "Zocor",
-          dosage: "400",
-          dosageUnit: "mg",
-        },
-        {
-          expiryTime: new Date("3/12/18"),
-          prescribedAt: new Date("3/6/18"),
-          patientWalletAddress: "0x1a0e14c6c2d16dd42b00b4152645a8b51f2698d6",
-          medicationName: "Acetaminophen",
-          brandName: "Lortab",
-          dosage: "150",
-          dosageUnit: "mg",
-        },
-      ]
+      accounts: [],
+      transactionLogs: []
     };
 
     this.toggle = this.toggle.bind(this);
   }
+
+  async componentDidMount() {
+    let {accounts, instance} = await utils.setupContract();
+    this.state.accounts = accounts;
+    this.state.ContractInstance = instance;
+    this.getPrescriptions();
+  }
+
+  getPrescriptions() {
+    this.state.ContractInstance.prescriptions(1).then((f) => {
+      console.log(f.metadata.dateFilled.toNumber());
+      let transactionLogs = Array(f.length)
+      for(let i = 0; i < f.length; i++) {
+        console.log(f.owner )
+        console.log(this.state.accounts[0])
+        if(f.owner == this.state.accounts[0]) {
+          transactionLogs[i] = {
+            expiryTime: new Date(f.metadata.expirationTime.toNumber()),
+            prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
+            patientWalletAddress: f.metadata.prescribedPatient,
+            medicationName: f.metadata.medicationName,
+            brandName: f.metadata.brandName,
+            dosage: f.metadata.dosage,
+            dosageUnit: f.metadata.dosageUnit
+          }
+        }
+      }
+      this.setState({transactionLogs: transactionLogs})
+    });
+  };
 
   toggle() {
     this.setState({modal: !this.state.modal});
@@ -217,13 +200,7 @@ class App extends Component {
     )
   }
 
-  renderPatientDashboard() {
-
-  }
-
   render() {
-    const web3Context = this.context.web3;
-
     return (
       <div className="App container">
         <strong>George Washington University Hospital</strong>
@@ -235,7 +212,7 @@ class App extends Component {
               <Media body>
                 <h1>Hello, Dr. Laun</h1>
                 <h4>Your recent prescriptions.</h4>
-                <code>{web3Context.selectedAccount}</code>
+                <code>{this.state.accounts[0]}</code>
               </Media>
             </Media>
           </div>

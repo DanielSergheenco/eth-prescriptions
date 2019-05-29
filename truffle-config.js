@@ -95,6 +95,10 @@ module.exports = {
       //  },
       //  evmVersion: "byzantium"
       // }
-    }
+    },
+    //external: {
+    //  command: "truffle-export-abi -o patient-interface/public/ABI.json && truffle-export-abi -o wallet-interface/public/ABI.json && truffle-export-abi -o pharmacy-interface/public/ABI.json",
+    //  targets: [{path: "./*.json"}]
+    //}
   }
 };

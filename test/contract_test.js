@@ -3,7 +3,7 @@ const PrescriptionNFT = artifacts.require("PrescriptionNFT");
 contract("PrescriptionNFT", accounts => {
     it("should prescribe prescription to patient", async () => {
         let i = await PrescriptionNFT.deployed();
-        let tx = await i.prescribe(accounts[1], 'Aspirin Complex', 'test', 23, 'ml', 3, 123, 234, {from: accounts[4]});
+        let tx = await i.prescribe(accounts[1], 'Aspirin Complex', 'test', 23, 'ml', 3, Date.now(), Date.now() + 86400, {from: accounts[4]});
         assert.equal(tx.receipt.status, true, "Transaction failed");
 
         let tokens = await i.tokensOf(accounts[1]);
