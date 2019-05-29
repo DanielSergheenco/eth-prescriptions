@@ -44,9 +44,8 @@ class ModalForm extends Component {
 
   sendPrescription() {
     this.state.ContractInstance.prescribe(
-      this.context.web3.selectedAccount,
+      this.state.accounts[0],
       this.state.formState["patient-address"],
-      123, // hard-coded doctor ID.
       this.state.formState["medication-name"],
       this.state.formState["brand-name"],
       this.state.formState["dosage-quantity"],
@@ -76,6 +75,16 @@ class ModalForm extends Component {
   }
 
   render () {
+    if(this.props.input !== undefined && this.state.id !== this.props.input.id){
+      this.state.id = this.props.input.id;
+      this.state.formState["patient-address"] = this.props.input.patientWalletAddress;
+      this.state.formState["medication-name"] = this.props.input.medicationName;
+      this.state.formState["brand-name"] = this.props.input.brandName;
+      this.state.formState["dosage-quantity"] = this.props.input.dosage;
+      this.state.formState["dosage-unit"] = this.props.input.dosageUnit;
+      this.state.formState["expiration-date"] = this.props.input.expiryTime;
+    }
+
     if (this.state.transactionId) {
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
@@ -115,7 +124,7 @@ class ModalForm extends Component {
               </Input>
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Expirate Date</Label>
+              <Label for="exampleEmail">Expiration Date</Label>
               <Input type="date" name="expiration-date" placeholder="" onChange={this.inputUpdate.bind(this)} value={this.state.formState["expiration-date"] || ""} />
             </FormGroup>
           </Form>
@@ -151,34 +160,41 @@ class App extends Component {
     let {accounts, instance} = await utils.setupContract();
     this.state.accounts = accounts;
     this.state.ContractInstance = instance;
-    this.getPrescriptions();
+    await this.getPrescriptions();
   }
 
-  getPrescriptions() {
-    this.state.ContractInstance.prescriptions(1).then((f) => {
-      console.log(f.metadata.dateFilled.toNumber());
-      let transactionLogs = Array(f.length)
-      for(let i = 0; i < f.length; i++) {
-        console.log(f.owner )
-        console.log(this.state.accounts[0])
-        if(f.owner == this.state.accounts[0]) {
-          transactionLogs[i] = {
-            expiryTime: new Date(f.metadata.expirationTime.toNumber()),
-            prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
-            patientWalletAddress: f.metadata.prescribedPatient,
-            medicationName: f.metadata.medicationName,
-            brandName: f.metadata.brandName,
-            dosage: f.metadata.dosage,
-            dosageUnit: f.metadata.dosageUnit
-          }
-        }
-      }
-      this.setState({transactionLogs: transactionLogs})
-    });
+
+  async getPrescriptions() {
+    let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
+    let transactionLogs = await Promise.all(tokens.map(this.getPrescription, this));
+    this.setState({transactionLogs: transactionLogs})
   };
 
+  async getPrescription(token){
+    let f = await this.state.ContractInstance.prescriptions(token);
+    return {
+      id: token,
+      expiryTime: new Date(f.metadata.expirationTime.toNumber()),
+      prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
+      patientWalletAddress: f.metadata.prescribedPatient,
+      medicationName: f.metadata.medicationName,
+      brandName: f.metadata.brandName,
+      dosage: f.metadata.dosage,
+      dosageUnit: f.metadata.dosageUnit
+    };
+  }
   toggle() {
     this.setState({modal: !this.state.modal});
+  }
+
+  new(){
+    this.state.prior = {};
+    this.toggle()
+  }
+
+  renew(tx) {
+    this.state.prior = tx;
+    this.toggle()
   }
 
   renderTableRow(tx) {
@@ -193,7 +209,7 @@ class App extends Component {
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>{tx.dosage}{tx.dosageUnit} of {tx.brandName} ({tx.medicationName})</td>
         <td>
-          <Button color="primary" size="sm">Renew</Button>{' '}
+          <Button color="primary" size="sm" onClick={() => { this.renew(tx) }}>Renew</Button>{' '}
           <Button color="secondary" size="sm">Cancel</Button>
         </td>
       </tr>
@@ -218,7 +234,7 @@ class App extends Component {
           </div>
           <div className="col-md-2">
             <br />
-            <Button color="success" onClick={this.toggle}>Create a prescription</Button>
+            <Button color="success" onClick= { ()=> { this.new(this) }}>Create a prescription</Button>
           </div>
         </div>
         <br />
@@ -237,7 +253,7 @@ class App extends Component {
           </tbody>
         </Table>
 
-        <ModalForm visibility={this.state.modal} toggle={this.toggle} />
+        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior}/>
       </div>
     );
   }
