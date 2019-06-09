@@ -36,37 +36,23 @@ class ModalForm extends Component {
     };
   }
 
-  async componentDidMount() {
-    let {accounts, instance} = await utils.setupContract();
-    this.state.accounts = accounts;
-    this.state.ContractInstance = instance;
-  }
-
-  sendPrescription() {
-    this.state.ContractInstance.prescribe(
-      this.state.accounts[0],
+  async sendPrescription() {
+    let tx = await this.props.state.ContractInstance.prescribe(
       this.state.formState["patient-address"],
       this.state.formState["medication-name"],
       this.state.formState["brand-name"],
       this.state.formState["dosage-quantity"],
       this.state.formState["dosage-unit"],
-      this.state.formState["pill-quantity"],
+      0,
       Date.now(),
       Date.now(this.state.formState["expiration-date"]),
       {
-        gas: 300000,
-        gasPrice: 400000000000,
-        from: this.state.accounts[0],
-        value: 0
-      },
-      (err, result) => {
-        console.log("Err", err);
-        console.log("Res", result);
-        if (result) {
-          this.setState({ transactionId: result });
-        }
-        // if (result) { this.props.toggle(); }
+        gasLimit: 300000,
+        gasPrice: 400000000000
       });
+    console.log(tx);
+    this.setState({ transactionId: tx.hash });
+      //this.props.toggle();
     }
 
   inputUpdate(event) {
@@ -253,7 +239,7 @@ class App extends Component {
           </tbody>
         </Table>
 
-        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior}/>
+        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state}/>
       </div>
     );
   }

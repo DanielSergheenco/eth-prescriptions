@@ -4,9 +4,17 @@ let contract = '0x1854140B3782bCfabC05123603746AF1Df2d782d'
 
 export async function setupContract(){
 
-    const provider = new ethers.providers.JsonRpcProvider('http://localhost:7545')
-    let accounts = await provider.listAccounts();
-    let signer = provider.getSigner();
-    let instance = new ethers.Contract(contract, ABI, signer);
-    return {accounts: accounts, instance: instance};
+    const provider = new ethers.providers.Web3Provider(window.web3.currentProvider);
+    if (window.ethereum) {
+        try {
+            // Request account access if needed
+            await window.ethereum.enable();
+            let accounts = await provider.listAccounts();
+            let signer = provider.getSigner();
+            let instance = new ethers.Contract(contract, ABI, signer);
+            return {accounts: accounts, instance: instance};
+        } catch (error) {
+            // User denied account access...
+        }
+    }
 }
