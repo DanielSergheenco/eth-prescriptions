@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity ^0.5.9;
 pragma experimental ABIEncoderV2;
 import "./ERC721.sol";
 import "./SafeMath.sol";
@@ -15,11 +15,9 @@ contract PrescriptionNFT is ERC721 {
   address public owner;
 
   struct PrescriptionMetadata {
-    //Doctor ID that sent this prescription
-    //This is the ID that is given to verified doctors by the CA
+    //address of doctor that issued this prescription
     address doctor;
-    //Doctor ID that sent this prescription
-    //This is the ID that is given to verified doctors by the CA
+    //address of Patient that receives this prescription
     address prescribedPatient;
     //Scientific name of the medicine
     string medicationName;
@@ -59,7 +57,10 @@ contract PrescriptionNFT is ERC721 {
 
   //Map of the certified doctors Map<address, Doctor>
   mapping (address => Doctor) public approvedDoctors;
-  
+
+  // Mapping of tokens issued by a doctor
+  mapping (address => uint256[]) private issuedTokens;
+
   // Mapping from owner to list of owned token IDs
   //May make this a map of maps: Map<address, tokenIds[]>
   mapping (address => uint256[]) private ownedTokens;
@@ -147,7 +148,7 @@ contract PrescriptionNFT is ERC721 {
         _dateFilled,
         _expirationTime
       );
-
+      issuedTokens[msg.sender].push(newTokenId);
       //numTokens will get incremented in _mint
       //The token will also get created and sent to the patient
       _mint(_patientAddress, newTokenId);
@@ -239,7 +240,13 @@ contract PrescriptionNFT is ERC721 {
     return ownedTokens[_owner].length;
   }
 
-
+  /**
+  * @dev Gets the list of tokens issued by a given address
+  * @return uint256[] representing the list of tokens issued by the passed address
+  */
+  function tokensIssued(address _doctor) public view returns (uint256[] memory) {
+    return issuedTokens[_doctor];
+  }
   /**
   * @dev Gets the list of tokens owned by a given address
   * @param _owner address to query the tokens of

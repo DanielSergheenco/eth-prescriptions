@@ -26,7 +26,7 @@ import {
   Table
 } from 'reactstrap';
 
-let utils = require('./utils.js')
+let utils = require('./utils.js');
 
 class ModalForm extends Component {
   constructor(props) {
@@ -50,7 +50,6 @@ class ModalForm extends Component {
         gasLimit: 300000,
         gasPrice: 400000000000
       });
-    console.log(tx);
     this.setState({ transactionId: tx.hash });
       //this.props.toggle();
     }
@@ -150,9 +149,10 @@ class App extends Component {
   }
 
 
-  async getPrescriptions() {
-    let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
-    let transactionLogs = await Promise.all(tokens.map(this.getPrescription, this));
+  async getPrescriptions(page) {
+    let tokens = await this.state.ContractInstance.tokensIssued(this.state.accounts[0]);
+    let items = tokens.slice(Math.max(tokens.length - 5, 1)).reverse();
+    let transactionLogs = await Promise.all(items.map(this.getPrescription, this));
     this.setState({transactionLogs: transactionLogs})
   };
 
@@ -239,7 +239,7 @@ class App extends Component {
           </tbody>
         </Table>
 
-        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state}/>
+        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state} onClosed={this.getPrescriptions}/>
       </div>
     );
   }

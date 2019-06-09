@@ -8,6 +8,9 @@ contract("PrescriptionNFT", accounts => {
 
         let tokens = await i.tokensOf(accounts[1]);
         assert.equal(tokens.length, 1, "Token was not created");
+
+        let tokensIssued = await i.tokensIssued(accounts[4]);
+        assert.equal(tokensIssued.length, 1, "Token not issued")
     });
 
     it("should retrieve the contents of an existing token and verify contents", async () => {
