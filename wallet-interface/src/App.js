@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import {
   Button,
   Form,
+  FormFeedback,
   FormGroup,
   Input,
   Label,
@@ -36,7 +37,7 @@ class ModalForm extends Component {
     };
   }
 
-  async sendPrescription() {
+  async sendPrescription(event) {
     let tx = await this.props.state.ContractInstance.prescribe(
       this.state.formState["patient-address"],
       this.state.formState["medication-name"],
@@ -55,9 +56,17 @@ class ModalForm extends Component {
     }
 
   inputUpdate(event) {
+    const form = event.currentTarget;
+    const allFieldsValid = this.checkAllFieldsValid(form.elements);
+    this.setState({ formValid: allFieldsValid})
     this.setState({ formState: { ...this.state.formState, [event.target.name]: event.target.value }});
     return false;
   }
+
+  checkAllFieldsValid = (formValues) => {
+      let elements = Array.prototype.slice.call(formValues);
+      return !elements.some(field => field.classList.contains('is-invalid'));
+  };
 
   render () {
     if(this.props.input !== undefined && this.state.id !== this.props.input.id){
@@ -67,7 +76,8 @@ class ModalForm extends Component {
       this.state.formState["brand-name"] = this.props.input.brandName;
       this.state.formState["dosage-quantity"] = this.props.input.dosage;
       this.state.formState["dosage-unit"] = this.props.input.dosageUnit;
-      this.state.formState["expiration-date"] = this.props.input.expiryTime;
+      if(this.props.input.expiryTime instanceof Date)
+        this.state.formState["expiration-date"] = this.props.input.expiryTime.toLocaleDateString("en-US");
     }
 
     if (this.state.transactionId) {
@@ -83,26 +93,27 @@ class ModalForm extends Component {
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}>Create a prescription</ModalHeader>
         <ModalBody>
-          <Form>
+          <Form onInput={this.inputUpdate.bind(this)} tooltip>
             <FormGroup>
               <Label for="exampleEmail">Patient wallet address:</Label>
-              <Input type="text" name="patient-address" onChange={this.inputUpdate.bind(this)} value={this.state.formState["patient-address"] || ""} placeholder="0x123f681646d4a755815f9cb19e1acc8565a0c2ac" />
+              <Input type="text" name="patient-address"  value={this.state.formState["patient-address"] || ""} placeholder="0x123f681646d4a755815f9cb19e1acc8565a0c2ac" required valid invalid={!window.web3.isAddress(this.state.formState["patient-address"])}/>
+              <FormFeedback>Not a valid address</FormFeedback>
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Medication Name</Label>
-              <Input type="text" name="medication-name" onChange={this.inputUpdate.bind(this)} value={this.state.formState["medication-name"] || ""} />
+              <Input type="text" name="medication-name"  value={this.state.formState["medication-name"] || ""} required/>
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Brand Name</Label>
-              <Input type="text" name="brand-name" onChange={this.inputUpdate.bind(this)} value={this.state.formState["brand-name"] || ""} />
+              <Input type="text" name="brand-name"  value={this.state.formState["brand-name"] || ""} required/>
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Dosage</Label>
-              <Input type="number" name="dosage-quantity" onChange={this.inputUpdate.bind(this)} value={this.state.formState["dosage-quantity"] || ""} />
+              <Input type="number" name="dosage-quantity"  value={this.state.formState["dosage-quantity"] || ""} required/>
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Dosage Unit</Label>
-              <Input type="select" name="dosage-unit" onChange={this.inputUpdate.bind(this)} value={this.state.formState["dosage-unit"] || ""} >
+              <Input type="select" name="dosage-unit"  value={this.state.formState["dosage-unit"] || ""} required>
                 <option value="ml">ml</option>
                 <option value="mg">mg</option>
                 <option value="tablets">tablets</option>
@@ -110,13 +121,14 @@ class ModalForm extends Component {
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Expiration Date</Label>
-              <Input type="date" name="expiration-date" placeholder="" onChange={this.inputUpdate.bind(this)} value={this.state.formState["expiration-date"] || ""} />
+              <Input type="date" name="expiration-date" placeholder=""  value={this.state.formState["expiration-date"] || ""} invalid={this.state.formState["expiration-date"] == null || this.state.formState["expiration-date"] === ""} required/>
+                <FormFeedback>Not a valid date</FormFeedback>
             </FormGroup>
           </Form>
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-          <Button color="primary" onClick={this.sendPrescription.bind(this)}>Send Prescription</Button>
+          <Button color="primary" onClick={this.sendPrescription.bind(this)} disabled={!this.state.formValid}>Send Prescription</Button>
         </ModalFooter>
       </Modal>
     );
