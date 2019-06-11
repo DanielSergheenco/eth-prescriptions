@@ -1,9 +1,8 @@
 import ABI from "./ABI";
 let ethers = require('ethers')
-let contract = '0x1854140B3782bCfabC05123603746AF1Df2d782d'
+let contract = process.env.REACT_APP_CONTRACT_ADDRESS
 
 export async function setupContract(){
-
     const provider = new ethers.providers.Web3Provider(window.web3.currentProvider);
     if (window.ethereum) {
         try {

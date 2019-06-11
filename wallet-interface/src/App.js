@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.css';
+import { Paginationbar } from 'reactstrap-paginationbar';
 import {
   Button,
   Form,
@@ -74,7 +75,6 @@ class ModalForm extends Component {
       this.state.formState["brand-name"] = this.props.input.brandName;
       this.state.formState["dosage-quantity"] = this.props.input.dosage;
       this.state.formState["dosage-unit"] = this.props.input.dosageUnit;
-      console.log(this.props.input.expiryTime)
       if(this.props.input.expiryTime instanceof Date)
         this.state.formState["expiration-date"] = this.props.input.expiryTime.toISOString().substring(0, 10);
     }
@@ -92,7 +92,7 @@ class ModalForm extends Component {
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}>Create a prescription</ModalHeader>
         <ModalBody>
-          <Form onInput={this.inputUpdate.bind(this)} tooltip>
+          <Form onInput={this.inputUpdate.bind(this)} tooltip="">
             <FormGroup>
               <Label for="exampleEmail">Patient wallet address:</Label>
               <Input type="text" name="patient-address"  value={this.state.formState["patient-address"] || ""} placeholder="0x123f681646d4a755815f9cb19e1acc8565a0c2ac" required valid invalid={!window.web3.isAddress(this.state.formState["patient-address"])}/>
@@ -146,7 +146,10 @@ class App extends Component {
     this.state = {
       modal: false,
       accounts: [],
-      transactionLogs: []
+      transactionLogs: [],
+      pageSize: 3,
+      fromItem: 0,
+      toItem: 2
     };
 
     this.toggle = this.toggle.bind(this);
@@ -159,11 +162,9 @@ class App extends Component {
     await this.getPrescriptions();
   }
 
-
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensIssued(this.state.accounts[0]);
-    let items = tokens.slice(Math.max(tokens.length - 5, 0)).reverse();
-    let transactionLogs = await Promise.all(items.map(this.getPrescription, this));
+    let transactionLogs = await Promise.all(tokens.map(this.getPrescription, this));
     this.setState({transactionLogs: transactionLogs})
   };
 
@@ -180,6 +181,12 @@ class App extends Component {
       dosageUnit: f.metadata.dosageUnit
     };
   }
+/*
+  setPrescriptionsPage(e){
+    let prescriptionsPage = tokens.slice(Math.max(tokens.length - 10, 0)).reverse();
+    this.setState({transactionLogsPage: prescriptionsPage});
+  }*/
+
   toggle() {
     this.setState({modal: !this.state.modal});
   }
@@ -196,7 +203,7 @@ class App extends Component {
 
   renderTableRow(tx) {
     return (
-      <tr>
+      <tr key={tx.id}>
         <th>
           <small>
             {tx.patientWalletAddress}
@@ -246,10 +253,16 @@ class App extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.transactionLogs.map(this.renderTableRow.bind(this))}
+            {this.state.transactionLogs
+              .slice(this.state.fromItem, this.state.toItem + 1)
+              .map(this.renderTableRow.bind(this))}
           </tbody>
         </Table>
-
+        <Paginationbar
+          totalItems={this.state.transactionLogs.length}
+          pageSize={this.state.pageSize}
+          onTurnPage={e => this.setState(e)}
+        />
         <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state} onClosed={this.getPrescriptions}/>
       </div>
     );
