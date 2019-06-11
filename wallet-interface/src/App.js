@@ -37,7 +37,7 @@ class ModalForm extends Component {
     };
   }
 
-  async sendPrescription(event) {
+  async sendPrescription() {
     let tx = await this.props.state.ContractInstance.prescribe(
       this.state.formState["patient-address"],
       this.state.formState["medication-name"],
@@ -46,12 +46,10 @@ class ModalForm extends Component {
       this.state.formState["dosage-unit"],
       0,
       Date.now(),
-      Date.now(this.state.formState["expiration-date"]),
-      {
-        gasLimit: 300000,
-        gasPrice: 400000000000
-      });
+      Date.now(this.state.formState["expiration-date"]),{});
     this.setState({ transactionId: tx.hash });
+    //access parent instance to refresh prescriptions
+    this._reactInternalFiber._debugOwner.stateNode.getPrescriptions();
       //this.props.toggle();
     }
 
@@ -76,8 +74,9 @@ class ModalForm extends Component {
       this.state.formState["brand-name"] = this.props.input.brandName;
       this.state.formState["dosage-quantity"] = this.props.input.dosage;
       this.state.formState["dosage-unit"] = this.props.input.dosageUnit;
+      console.log(this.props.input.expiryTime)
       if(this.props.input.expiryTime instanceof Date)
-        this.state.formState["expiration-date"] = this.props.input.expiryTime.toLocaleDateString("en-US");
+        this.state.formState["expiration-date"] = this.props.input.expiryTime.toISOString().substring(0, 10);
     }
 
     if (this.state.transactionId) {
@@ -163,7 +162,7 @@ class App extends Component {
 
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensIssued(this.state.accounts[0]);
-    let items = tokens.slice(Math.max(tokens.length - 5, 1)).reverse();
+    let items = tokens.slice(Math.max(tokens.length - 5, 0)).reverse();
     let transactionLogs = await Promise.all(items.map(this.getPrescription, this));
     this.setState({transactionLogs: transactionLogs})
   };
