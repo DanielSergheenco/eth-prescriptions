@@ -1,20 +1,33 @@
 {
   "name": "doctor-interface",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "prefix": "../node_modules",
   "private": true,
   "dependencies": {
     "bootstrap": "^4.0.0",
     "ethers": "^4.0.28",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "react-scripts": "1.1.1",
-    "reactstrap": "^5.0.0-beta.2"
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
+    "reactstrap": "^8.0.0",
+    "reactstrap-paginationbar": "^1.0.0-beta.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
