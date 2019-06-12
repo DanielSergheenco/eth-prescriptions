@@ -1,9 +1,10 @@
 const PrescriptionNFT = artifacts.require("PrescriptionNFT");
 
 contract("PrescriptionNFT", accounts => {
+
     it("should prescribe prescription to patient", async () => {
         let i = await PrescriptionNFT.deployed();
-        let tx = await i.prescribe(accounts[1], 'Aspirin Complex', 'test', 23, 'ml', 3, Date.now(), Date.now() + 86400, {from: accounts[4]});
+        let tx = await i.prescribe(accounts[1], '12345678', 'Aspirin Complex', 23, 'ml', 3, Math.floor(Date.now()/1000), Math.floor(Date.now()/1000 - 86400), {from: accounts[4]});
         assert.equal(tx.receipt.status, true, "Transaction failed");
 
         let tokens = await i.tokensOf(accounts[1]);
@@ -22,24 +23,45 @@ contract("PrescriptionNFT", accounts => {
         assert.equal(prescription.metadata.medicationName, "Aspirin Complex", "Wrong Medication Name")
     });
 
-    it("should transfer one prescription from a patient to a pharmacy", async () => {
+    it("should fill one prescription by transferring it from patient to pharmacy", async () => {
         let i = await PrescriptionNFT.deployed();
         let tokens = await i.tokensOf(accounts[1]);
-
+        let p = await i.prescriptions(tokens[0]);
         assert.isAtLeast(tokens.length, 1, "Account has no tokens");
 
-        let tx = await i.transfer(accounts[2], tokens[0], {from: accounts[1]});
+        let tx = await i.fillPrescription(accounts[2], tokens[0], {from: accounts[1]});
+        assert.isTrue(tx.receipt.status, "Transaction failed");
 
-        assert.equal(tx.receipt.status, true, "Transaction failed");
+        tokens = await i.tokensOf(accounts[2]);
 
-        let balance = await i.balanceOf.call(accounts[2]);
-        let tokenBalance = balance.toNumber();
-
-        assert.equal(tokenBalance, 1, "Token was not transferred");
+        assert.equal(tokens.length, 1, "Token was not transferred");
     });
 
-    it("should approve a new doctor ID and verify it", async() => {
-        let i = await PrescriptionNFT.deployed()
+    it("should issue a prescription and cancel it again", async() => {
+        let i = await PrescriptionNFT.deployed();
+        let tx = await i.prescribe(accounts[7], '12345678', 'Aspirin Complex', 23, 'ml', 3, Date.now(), Date.now() + 86400, {from: accounts[4]});
+        let tokens = await i.tokensOf(accounts[7]);
+        //console.log(tokens);
+        assert.equal(tokens.length, 1, "Token not created");
+        console.log(tokens);
+        let tx2 = await i.cancelPrescription(tokens[0], {from: accounts[4]});
+        let tokens2 = await i.tokensOf(accounts[7]);
+        assert.equal(tokens2.length, 0, "Token not cancelled")
+    });
+
+    it("should approve a new doctor", async() => {
+        let i = await PrescriptionNFT.deployed();
+        let tx = await i.approveDoctor(accounts[9], 'Dr. Smithy');
+        let doctor = await i.approvedDoctors(accounts[9]);
+        assert.isTrue(doctor.isValid, 'Doctor name incorrect')
+        assert.equal(doctor.name, 'Dr. Smithy', 'Doctor name incorrect')
+    });
+
+    it("should remove an existing verified doctor's approval state", async() => {
+        let i = await PrescriptionNFT.deployed();
+        let tx = await i.removeDoctor(accounts[9]);
+        let doctor = await i.approvedDoctors(accounts[9]);
+        assert.isFalse(doctor.isValid)
     });
 
 

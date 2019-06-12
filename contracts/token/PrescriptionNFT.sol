@@ -19,10 +19,10 @@ contract PrescriptionNFT is ERC721 {
     address doctor;
     //address of Patient that receives this prescription
     address prescribedPatient;
+    //PZN of medication (8 digits)
+    string pzn;
     //Scientific name of the medicine
     string medicationName;
-    //Brand name of the medicine
-    string brandName;
     //payload per pill
     uint8 dosage;
     //Unit for the dosage (mg, `ml, etc)
@@ -38,6 +38,7 @@ contract PrescriptionNFT is ERC721 {
   struct Prescription {
     PrescriptionMetadata metadata;
     address owner;
+    bool filled;
   }
 
   //metadata for a Doctor
@@ -114,8 +115,8 @@ contract PrescriptionNFT is ERC721 {
   * @dev Fill the Prescription with the given tokenId. This means that the user will 
   *   transfer their Prescription tokens to the pharmacy address
   * @param _patientAddress wallet address of the patient to receive the prescription tokens
+  * @param _pzn pzn number of medication
   * @param _medicationName medication name
-  * @param _brandName medication brand
   * @param _dosage payload per pill
   * @param _dosageUnit unit for payload per pill (mg, ml, etc)
   * @param _numPills number of pills that this token is good for 
@@ -124,24 +125,25 @@ contract PrescriptionNFT is ERC721 {
   */
   function prescribe(
     address _patientAddress,
+    string memory _pzn,
     string memory _medicationName,
-    string memory _brandName,
     uint8 _dosage,
     string memory _dosageUnit,
     uint8 _numPills,
     uint256 _dateFilled,
-    uint256 _expirationTime) public payable doctorIsApproved(msg.sender) {
+    uint256 _expirationTime) public doctorIsApproved(msg.sender) {
       //We will start the first tokenId at 0 and essentially treat it as an index
       //the next token id will just be = to the # of tokens 
       uint256 newTokenId = totalTokens;
 
       //Create a new Prescription token to the chain
       //Add a new Prescription token to the chain
+      prescriptions[newTokenId].filled = false;
       prescriptions[newTokenId].metadata = PrescriptionMetadata(
         msg.sender,
         _patientAddress,
+        _pzn,
         _medicationName,
-        _brandName,
         _dosage,
         _dosageUnit,
         _numPills,
@@ -154,6 +156,20 @@ contract PrescriptionNFT is ERC721 {
       _mint(_patientAddress, newTokenId);
   }
 
+  /**
+  * @dev Cancel an existing prescription
+  * @param _tokenId id of the token to cancel (must be issued by doctor)
+  */
+  function cancelPrescription(uint256 _tokenId) public payable doctorIsApproved(msg.sender){
+    //get prescription & verify prerequisites
+    require(_tokenId < totalTokens);
+    Prescription memory p = prescriptions[_tokenId];
+    require(p.metadata.doctor == msg.sender);
+    require(p.filled == false);
+    //remove token
+    removeToken(p.metadata.prescribedPatient, _tokenId);
+  }
+
  /*
  * Patient methods
  */
@@ -164,10 +180,11 @@ contract PrescriptionNFT is ERC721 {
   * @param _pharmacyAddress uint256 ID of doctor to approve for giving prescriptions
   * @param _tokenId uint256 ID of Prescription token to send 
   */
-  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public
-    doctorIsApproved(prescriptions[_tokenId].metadata.doctor)
-    hasNotExpired(_tokenId) {
+  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public payable
+    hasNotExpired(_tokenId)
+  {
       transfer(_pharmacyAddress, _tokenId);
+      prescriptions[_tokenId].filled = true;
   }
 
   /*
@@ -188,7 +205,8 @@ contract PrescriptionNFT is ERC721 {
   * @param _tokenId uint256 ID of the token to validate its ownership belongs to msg.sender
   */
   modifier hasNotExpired(uint256 _tokenId) {
-    require(prescriptions[_tokenId].metadata.expirationTime <= now);
+    uint256 timeToExpiry = prescriptions[_tokenId].metadata.expirationTime - now;
+    require(timeToExpiry > 0);
     _;
   }
 

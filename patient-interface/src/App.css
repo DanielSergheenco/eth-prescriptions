@@ -5,3 +5,12 @@ body {
   background-color: #efefef;
   border-top: 4px solid #aaa;
 }
+
+.user-icon {
+    width: 100px;
+    line-height: 100px !important;
+    vertical-align: middle;
+    text-align: center;
+    color: gray;
+    margin-right: 15px;
+}
