@@ -30,14 +30,19 @@ class ModalForm extends Component {
     };
   }
 
-  fill() {
-    this.props.state.ContractInstance.fillPrescription(
-      this.state.formState["pharmacy-address"],
-      this.props.state.tokenId
-    );
-    this.props.toggle();
+  async fill() {
+    try {
+      let tx = await this.props.state.ContractInstance.fillPrescription(
+        this.state.formState["pharmacy-address"],
+        this.props.state.tokenId
+      );
 
-    return false;
+      this._reactInternalFiber._debugOwner.stateNode.updatePrescription(this.props.state.tokenId);
+      this.props.toggle();
+    }
+    catch(err){ //User denied signature
+      this.props.toggle();
+    }
   }
 
   inputUpdate(event) {
@@ -115,6 +120,12 @@ class App extends Component {
   fill(tx) {
     this.setState({tokenId: tx.id})
     this.toggle()
+  }
+
+  updatePrescription(id){
+    let i = this.state.transactionLogs.findIndex(tx => tx.id === id);
+    this.state.transactionLogs[i].filled = true;
+    this.forceUpdate();
   }
 
   renderTableRow(tx) {
