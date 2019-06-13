@@ -39,14 +39,17 @@ contract("PrescriptionNFT", accounts => {
 
     it("should issue a prescription and cancel it again", async() => {
         let i = await PrescriptionNFT.deployed();
-        let tx = await i.prescribe(accounts[7], '12345678', 'Aspirin Complex', 23, 'ml', 3, Date.now(), Date.now() + 86400, {from: accounts[4]});
+        let tx = await i.prescribe(accounts[7], '12345678', 'Aspirin Complex', 23, 'ml', 3, Date.now(), Date.now() + 86400, {from: accounts[5]});
+
         let tokens = await i.tokensOf(accounts[7]);
-        //console.log(tokens);
         assert.equal(tokens.length, 1, "Token not created");
-        console.log(tokens);
-        let tx2 = await i.cancelPrescription(tokens[0], {from: accounts[4]});
+
+        let tx2 = await i.cancelPrescription(tokens[0], {from: accounts[5]});
+
         let tokens2 = await i.tokensOf(accounts[7]);
         assert.equal(tokens2.length, 0, "Token not cancelled")
+        tokens2 = await i.tokensIssued(accounts[5]);
+        assert.equal(tokens2.length, 0, "Token not removed from issued tokens")
     });
 
     it("should approve a new doctor", async() => {

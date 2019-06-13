@@ -9,7 +9,6 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -34,7 +33,7 @@ class ModalForm extends Component {
   fill() {
     this.props.state.ContractInstance.fillPrescription(
       this.state.formState["pharmacy-address"],
-      this.props.state.tokenId.toNumber()
+      this.props.state.tokenId
     );
     this.props.toggle();
 
@@ -92,7 +91,7 @@ class App extends Component {
 
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
-    let transactionLogs = await Promise.all(tokens.map(this.getPrescription, this));
+    let transactionLogs = await Promise.all(tokens.reverse().map(this.getPrescription, this));
     this.setState({transactionLogs: transactionLogs})
   };
 

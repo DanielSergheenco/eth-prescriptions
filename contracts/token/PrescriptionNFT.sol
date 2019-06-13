@@ -66,10 +66,11 @@ contract PrescriptionNFT is ERC721 {
   //May make this a map of maps: Map<address, tokenIds[]>
   mapping (address => uint256[]) private ownedTokens;
 
-  // Mapping from token ID to index of the owner tokens list
-  //For prescription x, what is the index in ownedToken
+  // Mapping from token ID to index of the owner/issuer tokens list
+  // need to delete elements from array
   mapping(uint256 => uint256) private ownedTokensIndex;
- 
+  mapping(uint256 => uint256) private issuedTokensIndex;
+
   /**
    * @dev NFT Constructor
    *    Create a new PrescriptionNFT with doctors that have already been approved
@@ -150,6 +151,7 @@ contract PrescriptionNFT is ERC721 {
         _dateFilled,
         _expirationTime
       );
+      issuedTokensIndex[newTokenId] = issuedTokens[msg.sender].length;
       issuedTokens[msg.sender].push(newTokenId);
       //numTokens will get incremented in _mint
       //The token will also get created and sent to the patient
@@ -168,6 +170,7 @@ contract PrescriptionNFT is ERC721 {
     require(p.filled == false);
     //remove token
     removeToken(p.metadata.prescribedPatient, _tokenId);
+    destroyToken(p.metadata.doctor, _tokenId);
   }
 
  /*
@@ -180,8 +183,8 @@ contract PrescriptionNFT is ERC721 {
   * @param _pharmacyAddress uint256 ID of doctor to approve for giving prescriptions
   * @param _tokenId uint256 ID of Prescription token to send 
   */
-  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public payable
-    hasNotExpired(_tokenId)
+  function fillPrescription(address _pharmacyAddress, uint256 _tokenId) public
+    //hasNotExpired(_tokenId)
   {
       transfer(_pharmacyAddress, _tokenId);
       prescriptions[_tokenId].filled = true;
@@ -345,21 +348,34 @@ contract PrescriptionNFT is ERC721 {
   function removeToken(address _from, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _from);
 
+    totalTokens = totalTokens.sub(1);
+
+    //delete ownedTokens entry
     uint256 tokenIndex = ownedTokensIndex[_tokenId];
     uint256 lastTokenIndex = balanceOf(_from).sub(1);
     uint256 lastToken = ownedTokens[_from][lastTokenIndex];
-
-    prescriptions[_tokenId].owner = address(0);
-    ownedTokens[_from][tokenIndex] = lastToken;
-    ownedTokens[_from][lastTokenIndex] = 0;
-
-    // Note that this will handle single-element arrays. In that case, both tokenIndex and lastTokenIndex are going to
-    // be zero. Then we can make sure that we will remove _tokenId from the ownedTokens list since we are first swapping
-    // the lastToken to the first position, and then dropping the element placed in the last position of the list
     ownedTokens[_from].length--;
     ownedTokensIndex[_tokenId] = 0;
     ownedTokensIndex[lastToken] = tokenIndex;
-    totalTokens = totalTokens.sub(1);
+
+    prescriptions[_tokenId].owner = address(0);
+  }
+
+  /**
+    * @dev Internal function to remove token from issuer list and prescriptions mapping
+    * @param _doctor address representing the issuer of a given token
+    * @param _tokenId uint256 ID of the token to be removed from the tokens list of the given address
+    */
+  function destroyToken(address _doctor, uint256 _tokenId) private {
+    //delete issuedTokens entry
+    uint256 tokenIndex = issuedTokensIndex[_tokenId];
+    uint256 lastTokenIndex = issuedTokens[_doctor].length.sub(1);
+    uint256 lastToken = issuedTokens[_doctor][lastTokenIndex];
+    issuedTokens[_doctor].length--;
+    issuedTokensIndex[_tokenId] = 0;
+    issuedTokensIndex[lastToken] = tokenIndex;
+
+    delete prescriptions[_tokenId];
   }
 
   //  

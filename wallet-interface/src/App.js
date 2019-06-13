@@ -188,7 +188,7 @@ class App extends Component {
   }
 
   async cancelPrescription(tx) {
-    let f = await this.state.ContractInstance.cancelPrescription(tx.id.toNumber());
+    let f = await this.state.ContractInstance.cancelPrescription(tx.id);
   }
 
   toggle() {
