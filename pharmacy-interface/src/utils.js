@@ -13,7 +13,7 @@ export async function setupContract(){
             let instance = new ethers.Contract(contract, ABI, signer);
             return {accounts: accounts, instance: instance};
         } catch (error) {
-            // User denied account access...
+            console.log(error);
         }
     }
 }

@@ -10,11 +10,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import './App.css';
-
+import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import {
   Media, Table, Button
 } from 'reactstrap';
+let FontAwesome = require('react-fontawesome');
+let utils = require('./utils.js');
 
 
 class App extends Component {
@@ -22,7 +24,9 @@ class App extends Component {
     super(props);
     this.state = {
       modal: false,
-      transactionLogs: []
+      transactionLogs: [],
+      accounts: [],
+      doctors: new Map()
     };
 
     this.toggle = this.toggle.bind(this);
@@ -30,10 +34,49 @@ class App extends Component {
 
   async componentDidMount() {
     let {accounts, instance} = await utils.setupContract();
-    this.state.accounts = accounts;
-    this.state.ContractInstance = instance;
+    this.setState({accounts: accounts});
+    this.setState({ContractInstance: instance});
     await this.getPrescriptions();
+    let addresses = new Set();
+    for (let i = 0; i < this.state.transactionLogs.length; i++) {
+      let doctor = this.state.transactionLogs[i].doctor;
+      if(!addresses.has(doctor))
+        addresses.add(doctor);
+    }
+    await this.getDoctors(addresses);
   }
+
+  async getPrescriptions(page) {
+    let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
+    let transactionLogs = await Promise.all(tokens.reverse().map(this.getPrescription, this));
+    this.setState({transactionLogs: transactionLogs})
+  };
+
+  async getPrescription(token){
+    let f = await this.state.ContractInstance.prescriptions(token);
+    return {
+      id: token,
+      doctor: f.metadata.doctor,
+      expiryTime: new Date(f.metadata.expirationTime.toNumber()),
+      prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
+      patientWalletAddress: f.metadata.prescribedPatient,
+      pzn: f.metadata.pzn,
+      medicationName: f.metadata.medicationName,
+      dosage: f.metadata.dosage,
+      dosageUnit: f.metadata.dosageUnit
+    };
+  }
+
+  async getDoctors(addresses){
+    let doctors = new Map();
+    for (let address of addresses) {
+      let f = await this.state.ContractInstance.approvedDoctors(address);
+      if(f[1]) //approval
+        doctors.set(address, f[0]);
+    }
+
+    this.setState({doctors: doctors});
+  };
 
   toggle() {
     this.setState({modal: !this.state.modal});
@@ -42,15 +85,16 @@ class App extends Component {
   renderTableRow(tx) {
     return (
       <tr>
-        <th>
+        <td>
           <small>
-            <img src="https://cdn1.iconfinder.com/data/icons/interface-elements/32/accept-circle-512.png" width="15" height="15" alt="" /> Verified by:<br />
-            Dr. Greg: {tx.patientWalletAddress}
+            {tx.patientWalletAddress}<br/>
+            <FontAwesome name='check-circle' style={{ color: "green"}}/> Verified by {this.state.doctors.get(tx.doctor)}
           </small>
-        </th>
+        </td>
+        <td>{tx.pzn}</td>
+        <td>{tx.dosage}{tx.dosageUnit} of {tx.brandName} ({tx.medicationName})</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
-        <td>{tx.dosage}{tx.dosageUnit} of {tx.brandName} ({tx.medicationName})</td>
         <td>
           <Button color="default" size="sm" disabled>Filled</Button>
         </td>
@@ -61,15 +105,16 @@ class App extends Component {
   render() {
     return (
       <div className="App container">
-        <strong>Generic Pharmacy brand portal</strong>
+        <strong style={{verticalAlign: "middle"}}>Doctor Portal</strong>
+        <a href="http://trio.bayern" target="_blank" rel="noopener noreferrer"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
         <hr />
         <div className="row">
           <div className="col-md-10">
             <Media>
-              <Media className="rounded-circle" object src="http://www.clker.com/cliparts/l/f/L/k/Q/e/blank-pill-bottles-md.png" alt="Generic placeholder image" style={{ marginRight: 15 }} width="100" height="100" />
+              <FontAwesome className="user-icon" object name='heartbeat' alt="User" size={"5x"}/>
               <Media body>
-                <h1>Generic Pharmacy brand</h1>
-                <h4>Prescription requiring filling</h4>
+                <h1>Hello, </h1>
+                <h4>Prescriptions requiring filling</h4>
                 Pharmacy public address: <code>{this.state.accounts[0]}</code>
               </Media>
             </Media>
@@ -83,9 +128,10 @@ class App extends Component {
           <thead>
             <tr>
               <th>Patient address</th>
+              <th>PZN</th>
+              <th>Description</th>
               <th>Expires at</th>
               <th>Prescribed at</th>
-              <th>Description</th>
               <th>Status</th>
             </tr>
           </thead>
