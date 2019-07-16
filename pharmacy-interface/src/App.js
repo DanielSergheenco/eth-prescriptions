@@ -13,7 +13,7 @@ import './App.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import {
-  Media, Table, Button
+  Media, Table
 } from 'reactstrap';
 let FontAwesome = require('react-fontawesome');
 let utils = require('./utils.js');
@@ -49,13 +49,14 @@ class App extends Component {
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
     let transactionLogs = await Promise.all(tokens.reverse().map(this.getPrescription, this));
+    transactionLogs = transactionLogs.filter(f => f.filled);
     this.setState({transactionLogs: transactionLogs})
   };
 
   async getPrescription(token){
     let f = await this.state.ContractInstance.prescriptions(token);
     return {
-      id: token,
+      id: token.toNumber(),
       doctor: f.metadata.doctor,
       expiryTime: new Date(f.metadata.expirationTime.toNumber()),
       prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
@@ -63,7 +64,8 @@ class App extends Component {
       pzn: f.metadata.pzn,
       medicationName: f.metadata.medicationName,
       dosage: f.metadata.dosage,
-      dosageUnit: f.metadata.dosageUnit
+      dosageUnit: f.metadata.dosageUnit,
+      filled: f.filled
     };
   }
 
@@ -84,7 +86,8 @@ class App extends Component {
 
   renderTableRow(tx) {
     return (
-      <tr>
+      <tr key={tx.id}>
+        <td>{tx.id}</td>
         <td>
           <small>
             {tx.patientWalletAddress}<br/>
@@ -95,9 +98,6 @@ class App extends Component {
         <td>{tx.dosage}{tx.dosageUnit} of {tx.brandName} ({tx.medicationName})</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
-        <td>
-          <Button color="default" size="sm" disabled>Filled</Button>
-        </td>
       </tr>
     )
   }
@@ -111,10 +111,10 @@ class App extends Component {
         <div className="row">
           <div className="col-md-10">
             <Media>
-              <FontAwesome className="user-icon" object name='heartbeat' alt="User" size={"5x"}/>
+              <FontAwesome className="user-icon" name='heartbeat' alt="User" size={"5x"}/>
               <Media body>
                 <h1>Hello, </h1>
-                <h4>Prescriptions requiring filling</h4>
+                <h4>Prescription tokens transferred by patients:</h4>
                 Pharmacy public address: <code>{this.state.accounts[0]}</code>
               </Media>
             </Media>
@@ -127,12 +127,12 @@ class App extends Component {
         <Table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Patient address</th>
               <th>PZN</th>
               <th>Description</th>
               <th>Expires at</th>
               <th>Prescribed at</th>
-              <th>Status</th>
             </tr>
           </thead>
           <tbody>
