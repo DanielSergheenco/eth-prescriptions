@@ -13,11 +13,29 @@ import './App.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import {
-  Media, Table
+  Media, Table,
+  Modal, ModalHeader, ModalBody
 } from 'reactstrap';
+let QRCode = require('qrcode.react');
 let FontAwesome = require('react-fontawesome');
 let utils = require('./utils.js');
 
+class QRModal extends Component {
+  constructor(props) {
+    super(props);
+  }
+  render () {
+    return (
+      <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
+        <ModalHeader toggle={this.props.toggle}>Your Account Address</ModalHeader>
+        <ModalBody>
+          <code>{this.props.account}</code><br />< br/>
+          <QRCode size="512" value={this.props.account} style={{width: "100%"}}/>
+        </ModalBody>
+      </Modal>
+    )
+  }
+}
 
 class App extends Component {
   constructor(props) {
@@ -29,7 +47,7 @@ class App extends Component {
       doctors: new Map()
     };
 
-    this.toggle = this.toggle.bind(this);
+    this.toggleQR = this.toggleQR.bind(this);
   }
 
   async componentDidMount() {
@@ -80,8 +98,8 @@ class App extends Component {
     this.setState({doctors: doctors});
   };
 
-  toggle() {
-    this.setState({modal: !this.state.modal});
+  toggleQR() {
+    this.setState({modalQR: !this.state.modalQR});
   }
 
   renderTableRow(tx) {
@@ -105,17 +123,19 @@ class App extends Component {
   render() {
     return (
       <div className="App container">
-        <strong style={{verticalAlign: "middle"}}>Doctor Portal</strong>
+        <strong style={{verticalAlign: "middle"}}>Pharmacy Portal</strong>
         <a href="http://trio.bayern" target="_blank" rel="noopener noreferrer"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
         <hr />
         <div className="row">
           <div className="col-md-10">
             <Media>
-              <FontAwesome className="user-icon" name='heartbeat' alt="User" size={"5x"}/>
+              <FontAwesome className="clickable user-icon" onClick={() => { this.toggleQR() }} name='heartbeat' alt="User" size={"5x"}/>
               <Media body>
                 <h1>Hello, </h1>
                 <h4>Prescription tokens transferred by patients:</h4>
-                Pharmacy public address: <code>{this.state.accounts[0]}</code>
+                { this.state.accounts[0] !== undefined &&
+                  <p>Tap your profile icon to show your account address.</p>
+                }
               </Media>
             </Media>
           </div>
@@ -139,6 +159,8 @@ class App extends Component {
             {this.state.transactionLogs.map(this.renderTableRow.bind(this))}
           </tbody>
         </Table>
+
+        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} account={this.state.accounts[0]}/>
       </div>
     );
   }

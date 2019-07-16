@@ -14,3 +14,7 @@ body {
     color: gray;
     margin-right: 15px;
 }
+
+.clickable{
+    cursor: pointer;
+}

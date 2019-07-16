@@ -18,6 +18,7 @@ import {
   ModalBody, ModalFooter, Form, FormGroup,
   Label, Input
 } from 'reactstrap';
+let QRCode = require('qrcode.react');
 let FontAwesome = require('react-fontawesome');
 
 let utils = require('./utils.js');
@@ -71,6 +72,23 @@ class ModalForm extends Component {
   }
 }
 
+class QRModal extends Component {
+  constructor(props) {
+    super(props);
+  }
+  render () {
+    return (
+      <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
+        <ModalHeader toggle={this.props.toggle}>Your Account Address</ModalHeader>
+        <ModalBody>
+          <code>{this.props.account}</code><br />< br/>
+          <QRCode size="512" value={this.props.account} style={{width: "100%"}}/>
+        </ModalBody>
+      </Modal>
+    )
+  }
+}
+
 ModalForm.contextTypes = {
   web3: PropTypes.object
 };
@@ -85,6 +103,7 @@ class App extends Component {
     };
 
     this.toggle = this.toggle.bind(this);
+    this.toggleQR = this.toggleQR.bind(this);
   }
 
   async componentDidMount() {
@@ -103,18 +122,23 @@ class App extends Component {
   async getPrescription(token) {
     let f = await this.state.ContractInstance.prescriptions(token);
     return {
-      id: token,
+      id: token.toNumber(),
       expiryTime: new Date(f.metadata.expirationTime.toNumber()),
       prescribedAt: new Date(f.metadata.dateFilled.toNumber()),
       patientWalletAddress: f.metadata.prescribedPatient,
       medicationName: f.metadata.medicationName,
       dosage: f.metadata.dosage,
-      dosageUnit: f.metadata.dosageUnit
+      dosageUnit: f.metadata.dosageUnit,
+      filled: f.filled
     };
   }
 
   toggle() {
     this.setState({modal: !this.state.modal});
+  }
+
+  toggleQR() {
+    this.setState({modalQR: !this.state.modalQR});
   }
 
   fill(tx) {
@@ -131,12 +155,13 @@ class App extends Component {
   renderTableRow(tx) {
     return (
       <tr>
+        <td>{tx.id}</td>
         <td>{tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>
         {tx.filled ? 
-          <Button color="default" size="sm" disabled>Prescription filled</Button>:
+          <Button color="default" size="sm" disabled>Prescription filled</Button> :
           <Button color="success" size="sm" onClick={() => {this.fill(tx)}}>Fill prescription</Button>
         }
         </td>
@@ -153,11 +178,13 @@ class App extends Component {
         <div className="row">
           <div className="col-md-10">
             <Media>
-              <FontAwesome className="user-icon" object name='user-circle' alt="User" size={"5x"}/>
+              <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQR() }} name='user-circle' alt="User" size={"5x"}/>
               <Media body>
                 <h1>Hello,</h1>
                 <h4>You've recently been prescribed.</h4>
-                <code>{this.state.accounts[0]}</code>
+                { this.state.accounts[0] !== undefined &&
+                  <p>Tap your profile icon to show your account address.</p>
+                }
               </Media>
             </Media>
           </div>
@@ -169,6 +196,7 @@ class App extends Component {
         <Table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Description</th>
               <th>Expires at</th>
               <th>Prescribed at</th>
@@ -181,6 +209,7 @@ class App extends Component {
         </Table>
 
         <ModalForm visibility={this.state.modal} toggle={this.toggle} state={this.state}/>
+        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} account={this.state.accounts[0]}/>
       </div>
     );
   }
