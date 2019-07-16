@@ -1,6 +1,7 @@
 {
   "name": "doctor-interface",
   "version": "0.2.0",
+  "homepage": "./",
   "prefix": "../node_modules",
   "private": true,
   "dependencies": {
