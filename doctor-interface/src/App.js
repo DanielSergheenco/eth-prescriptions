@@ -9,6 +9,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import QRModal from './QRModal'
 import './App.css';
 import 'font-awesome/css/font-awesome.min.css';
 
@@ -69,6 +70,7 @@ class ModalForm extends Component {
   };
 
   render () {
+    if(this.props.input !== undefined && !this.props.input.pzn) this.state.formState["patient-address"] = this.props.input.patientWalletAddress;
     if(this.props.input !== undefined && this.state.id !== this.props.input.id){
       this.state.transactionId = false;
       this.state.id = this.props.input.id;
@@ -141,6 +143,7 @@ ModalForm.contextTypes = {
   web3: PropTypes.object
 };
 
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -155,6 +158,7 @@ class App extends Component {
     };
 
     this.toggle = this.toggle.bind(this);
+    this.toggleQR = this.toggleQR.bind(this);
   }
 
   async componentDidMount() {
@@ -195,14 +199,24 @@ class App extends Component {
     this.setState({modal: !this.state.modal});
   }
 
+  toggleQR() {
+    this.setState({modalQR: !this.state.modalQR});
+  }
+
   new(){
-    this.state.prior = {};
+    //if pre-filled from renew, reset. otherwise keep scanned address
+    if(this.state.prior && this.state.prior.pzn) this.state.prior = {};
     this.toggle()
   }
 
   renew(tx) {
     this.state.prior = tx;
     this.toggle()
+  }
+
+  saveAddress(address){
+    if(!this.state.prior) this.state.prior = {};
+    this.state.prior.patientWalletAddress = address;
   }
 
   renderTableRow(tx) {
@@ -231,8 +245,8 @@ class App extends Component {
         <strong style={{verticalAlign: "middle"}}>Doctor Portal</strong>
         <a href="http://trio.bayern" target="_blank" rel="noopener noreferrer"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
         <hr />
-        <div className="row">
-          <div className="col-md-10">
+        <div className="row position-relative">
+          <div className="col-md-6">
             <Media>
               <FontAwesome className="doctor-icon" object name='user-md' alt="User" size={"5x"}/>
               <Media body>
@@ -242,9 +256,9 @@ class App extends Component {
               </Media>
             </Media>
           </div>
-          <div className="col-md-2">
-            <br />
-            <Button color="success" onClick= { ()=> { this.new(this) }}>Create a prescription</Button>
+          <div className="col-md-6 text-right position-absolute" style={{bottom: 0, right: 0}}>
+            <Button color="secondary" className="m-1" onClick= { ()=> { this.toggleQR() }}><FontAwesome name='camera' className="mr-2"/> Scan patient address</Button>
+            <Button color="success" className="m-1" onClick= { ()=> { this.new(this) }}>Create a prescription</Button>
           </div>
         </div>
         <br />
@@ -271,6 +285,7 @@ class App extends Component {
           onTurnPage={e => this.setState(e)}
         />
         <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state} onClosed={this.getPrescriptions}/>
+        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
       </div>
     );
   }
