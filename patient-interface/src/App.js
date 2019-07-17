@@ -9,6 +9,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import QRModal from './QRModal';
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -27,10 +28,9 @@ class ModalForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      formState: { "dosage-unit": "ml" }
+      formState: {}
     };
   }
-
   async fill() {
     try {
       let tx = await this.props.state.ContractInstance.fillPrescription(
@@ -52,6 +52,7 @@ class ModalForm extends Component {
   }
 
   render () {
+    if(this.props.state.address) this.state.formState["pharmacy-address"] = this.props.state.address;
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}>Fill a prescription</ModalHeader>
@@ -72,7 +73,7 @@ class ModalForm extends Component {
   }
 }
 
-class QRModal extends Component {
+class QRAddressModal  extends Component {
   constructor(props) {
     super(props);
   }
@@ -141,6 +142,10 @@ class App extends Component {
     this.setState({modalQR: !this.state.modalQR});
   }
 
+  saveAddress(address){
+    this.state.address = address;
+  }
+
   fill(tx) {
     this.setState({tokenId: tx.id})
     this.toggle()
@@ -154,7 +159,7 @@ class App extends Component {
 
   renderTableRow(tx) {
     return (
-      <tr>
+      <tr key={tx.id}>
         <td>{tx.id}</td>
         <td>{tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
@@ -175,8 +180,8 @@ class App extends Component {
         <strong>Patient Portal</strong>
         <a href="http://trio.bayern" target="_blank"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
         <hr />
-        <div className="row">
-          <div className="col-md-10">
+        <div className="row  position-relative">
+          <div className="col-md-6">
             <Media>
               <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQR() }} name='user-circle' alt="User" size={"5x"}/>
               <Media body>
@@ -188,8 +193,8 @@ class App extends Component {
               </Media>
             </Media>
           </div>
-          <div className="col-md-2">
-            <br />
+          <div className="col-md-6 text-right position-absolute" style={{bottom: 0, right: 0}}>
+            <Button color="secondary" className="m-1" onClick= { ()=> { this.toggleQR() }}><FontAwesome name='camera' className="mr-2"/> Scan pharmacy address</Button>
           </div>
         </div>
         <br />
@@ -209,7 +214,8 @@ class App extends Component {
         </Table>
 
         <ModalForm visibility={this.state.modal} toggle={this.toggle} state={this.state}/>
-        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} account={this.state.accounts[0]}/>
+        <QRAddressModal visibility={this.state.modalQR} toggle={this.toggleQR} account={this.state.accounts[0]}/>
+        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
       </div>
     );
   }
