@@ -105,6 +105,7 @@ class App extends Component {
 
     this.toggle = this.toggle.bind(this);
     this.toggleQR = this.toggleQR.bind(this);
+    this.toggleQRAddress = this.toggleQRAddress.bind(this);
   }
 
   async componentDidMount() {
@@ -141,6 +142,11 @@ class App extends Component {
   toggleQR() {
     this.setState({modalQR: !this.state.modalQR});
   }
+
+  toggleQRAddress() {
+    this.setState({modalQRAddress: !this.state.modalQRAddress});
+  }
+
 
   saveAddress(address){
     this.state.address = address;
@@ -183,7 +189,7 @@ class App extends Component {
         <div className="row  position-relative">
           <div className="col-md-6">
             <Media>
-              <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQR() }} name='user-circle' alt="User" size={"5x"}/>
+              <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQRAddress() }} name='user-circle' alt="User" size={"5x"}/>
               <Media body>
                 <h1>Hello,</h1>
                 <h4>You've recently been prescribed.</h4>
@@ -214,7 +220,7 @@ class App extends Component {
         </Table>
 
         <ModalForm visibility={this.state.modal} toggle={this.toggle} state={this.state}/>
-        <QRAddressModal visibility={this.state.modalQR} toggle={this.toggleQR} account={this.state.accounts[0]}/>
+        <QRAddressModal visibility={this.state.modalQRAddress} toggle={this.toggleQRAddress} account={this.state.accounts[0]}/>
         <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
       </div>
     );
