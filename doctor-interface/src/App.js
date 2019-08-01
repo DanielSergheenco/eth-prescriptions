@@ -228,7 +228,7 @@ class App extends Component {
           </small>
         </td>
         <td>{tx.pzn}</td>
-        <td>{tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
+        <td>{tx.dosage} {tx.dosageUnit} of {tx.medicationName}</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>

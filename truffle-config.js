@@ -59,6 +59,17 @@ module.exports = {
       //websockets: true        // Enable EventEmitter interface for web3 (default: false)
     },
 
+    weiden: {
+      host: "localhost",
+      port: 8501,             // Custom port
+      network_id: 1778,       // Custom network
+      gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
+      gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
+      from: "0x6817056d4c69eb9cbf0d64d1594792a93e70bae4"       // Account to send txs from (default: accounts[0])
+      //websockets: true        // Enable EventEmitter interface for web3 (default: false)
+    },
+
+
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     // ropsten: {
@@ -97,7 +108,7 @@ module.exports = {
       // }
     },
     external: {
-      command: "truffle-export-abi -o patient-interface/src/ABI.json && truffle-export-abi -o wallet-interface/src/ABI.json && truffle-export-abi -o pharmacy-interface/src/ABI.json",
+      command: "truffle-export-abi -o patient-interface/src/ABI.json && truffle-export-abi -o doctor-interface/src/ABI.json && truffle-export-abi -o pharmacy-interface/src/ABI.json",
       targets: [{path: "./*.json"}]
     }
   }
