@@ -18,3 +18,15 @@ body {
 .clickable{
     cursor: pointer;
 }
+
+.media-body p {
+    margin-bottom: 0
+}
+
+td {
+    text-align: center;
+}
+
+th {
+    text-align: center;
+}
