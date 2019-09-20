@@ -43,25 +43,35 @@ class ModalForm extends Component {
     };
   }
 
-  async sendPrescription() {
-    let tx = await this.props.state.ContractInstance.prescribe(
-      this.state.formState["patient-address"],
-      this.state.pzn,
-      this.state.formState["medication-name"],
-      this.state.formState["dosage-quantity"],
-      this.state.formState["dosage-unit"],
-      0,
-      Date.now(),
-      Date.parse(this.state.formState["expiration-date"]),{});
-    this.setState({ transactionId: tx.hash });
-    //access parent instance to refresh prescriptions
-    this._reactInternalFiber._debugOwner.stateNode.getPrescriptions();
+  async sendPrescription(e) {
+    if(this.handleValidation()) {
+      let tx = await this.props.state.ContractInstance.prescribe(
+        this.state.formState["patient-address"],
+        this.state.pzn,
+        this.state.medicationName,
+        this.state.formState["dosage-quantity"],
+        this.state.formState["dosage-unit"],
+        0,
+        Date.now(),
+        Date.parse(this.state.formState["expiration-date"]), {gasPrice: 400000000, gasLimit: 400000});
+      this.props.state.transactionId = tx.hash;
+      //access parent instance to refresh prescriptions
+      this._reactInternalFiber._debugOwner.stateNode.getPrescriptions();
+    }
+    else{
+      e.preventDefault();
+    }
+  }
+
+  handleValidation(){
+    return (window.web3.isAddress(this.state.formState["patient-address"])) &&
+      !(this.state.formState["expiration-date"] == null || this.state.formState["expiration-date"] === "");
   }
 
   inputUpdate(event) {
     const form = event.currentTarget;
-    const allFieldsValid = this.checkAllFieldsValid(form.elements);
-    this.setState({ formValid: allFieldsValid})
+    //const allFieldsValid = this.checkAllFieldsValid(form.elements);
+    //this.setState({ formValid: allFieldsValid})
     this.setState({ formState: { ...this.state.formState, [event.target.name]: event.target.value }});
     return false;
   }
@@ -74,25 +84,25 @@ class ModalForm extends Component {
   render () {
     if(this.props.input !== undefined && !this.props.input.pzn) this.state.formState["patient-address"] = this.props.input.patientWalletAddress;
     if(this.props.input !== undefined && this.state.id !== this.props.input.id){
-      this.state.transactionId = false;
       this.state.id = this.props.input.id;
       this.state.formState["patient-address"] = this.props.input.patientWalletAddress;
       this.state.pzn = this.props.input.pzn;
-      this.state.formState["medication-name"] = this.props.input.medicationName;
+      this.state.medicationName = this.props.input.medicationName;
       this.state.formState["dosage-quantity"] = this.props.input.dosage;
       this.state.formState["dosage-unit"] = this.props.input.dosageUnit;
       if(this.props.input.expiryTime instanceof Date)
         this.state.formState["expiration-date"] = this.props.input.expiryTime.toISOString().substring(0, 10);
     }
 
-    if (this.state.transactionId) {
-    return (
+    if (this.props.state.transactionId) {
+    let html = (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}><FontAwesome name='check-circle'/> Your prescription has been sent!</ModalHeader>
         <ModalBody>
-          <p>Your prescription has successfully been sent to the patient and is available at the following transaction address: <code>{this.state.transactionId}</code></p>
+          <p>Your prescription has successfully been sent to the patient and is available at the following transaction address: <code>{this.props.state.transactionId}</code></p>
         </ModalBody>
       </Modal>);
+    return html;
     } else {
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
@@ -111,9 +121,9 @@ class ModalForm extends Component {
                 items={ drugs.map(function(drug){
                   return {
                     label : drug.PZN.toString() + " " + drug.Medikament,
-                    value: drug.PZN.toString()
+                    value: drug.PZN.toString() + '|' + drug.Medikament,
                   }; }) }
-                shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                shouldItemRender={(item, value) => true}
                 getItemValue={item => item.value}
                 wrapperStyle={{}}
                 renderItem={(item, highlighted) =>
@@ -129,13 +139,13 @@ class ModalForm extends Component {
                 inputProps={{className: "form-control"}}
                 required
                 value={this.state.pzn || ""}
-                onChange={e => this.setState({pzn : e.target.value} )}
-                onSelect={value => this.setState({pzn : value})}
+                onChange={e => this.setState({pzn : e.target.value.split('|')[0], medicationName: e.target.value.split('|')[1]} )}
+                onSelect={(val) => this.setState({pzn : val.split('|')[0], medicationName: val.split('|')[1]})}
               />
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Medication Name</Label>
-              <Input type="text" name="medication-name"  value={this.state.formState["medication-name"] || ""} required/>
+              <Input type="text" name="medication-name"  value={this.state.medicationName || ""} required/>
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Dosage</Label>
@@ -143,7 +153,7 @@ class ModalForm extends Component {
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Dosage Unit</Label>
-              <Input type="select" name="dosage-unit"  value={this.state.formState["dosage-unit"] || ""} required>
+              <Input on type="select" name="dosage-unit"  value={this.state.formState["dosage-unit"] || ""} required>
                 <option value="ml">ml</option>
                 <option value="mg">mg</option>
                 <option value="tablets">tablets</option>
@@ -151,14 +161,14 @@ class ModalForm extends Component {
             </FormGroup>
             <FormGroup>
               <Label for="exampleEmail">Expiration Date</Label>
-              <Input type="date" name="expiration-date" placeholder=""  value={this.state.formState["expiration-date"] || ""} invalid={this.state.formState["expiration-date"] == null || this.state.formState["expiration-date"] === ""} required/>
+              <Input type="date" min={(new Date((new Date()).getTime() + (7*60*60*24*1000))).toISOString().substr(0,10)} name="expiration-date" placeholder=""  value={this.state.formState["expiration-date"] || ""} invalid={this.state.formState["expiration-date"] == null || this.state.formState["expiration-date"] === ""} required/>
                 <FormFeedback>Not a valid date</FormFeedback>
             </FormGroup>
           </Form>
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-          <Button color="primary" onClick={this.sendPrescription.bind(this)} disabled={!this.state.formValid}>Send Prescription</Button>
+          <Button color="primary" onClick={this.sendPrescription.bind(this)}>Send Prescription</Button>
         </ModalFooter>
       </Modal>
     );
@@ -233,7 +243,10 @@ class App extends Component {
 
   new(){
     //if pre-filled from renew, reset. otherwise keep scanned address
-    if(this.state.prior && this.state.prior.pzn) this.state.prior = {};
+    if((this.state.prior && this.state.prior.pzn) || this.state.transactionId){
+      this.state.prior = {};
+      this.state.transactionId = false;
+    }
     this.toggle()
   }
 
