@@ -94,7 +94,11 @@ class QRAddressModal  extends Component {
 class DrugModal  extends Component {
   constructor(props) {
     super(props);
+
+  }
+  initDrug(){
     let drug = drugs.filter(f => f.PZN == this.props.pzn);
+    console.log(drugs.length);
     if(drug.length > 0){
       drug = drug[0];
     }
@@ -102,7 +106,9 @@ class DrugModal  extends Component {
       drug: drug
     };
   }
+
   render () {
+    this.initDrug();
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}>Prescription Information</ModalHeader>
@@ -191,7 +197,6 @@ class App extends Component {
   }
 
   showDrug(pzn){
-    console.log(pzn)
     this.setState({pzn: pzn});
     this.toggleDrug()
   }
@@ -219,7 +224,11 @@ class App extends Component {
     return (
       <tr key={tx.id}>
         <td>{tx.id}</td>
-        <td onClick={ ()=> { this.showDrug(tx.pzn) }}>{tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
+        <td>{
+          drugs.filter(f => f.PZN == tx.pzn).length > 0 &&
+          (<FontAwesome className="info-circle clickable" onClick={ ()=> { this.showDrug(tx.pzn) }} name='info-circle' alt="User" size={"1x"} style={{paddingRight: 5}}/>)
+        }
+          {tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>
