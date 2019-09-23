@@ -348,12 +348,12 @@ contract PrescriptionNFT is ERC721 {
   function removeToken(address _from, uint256 _tokenId) private {
     require(ownerOf(_tokenId) == _from);
 
-    totalTokens = totalTokens.sub(1);
-
     //delete ownedTokens entry
     uint256 tokenIndex = ownedTokensIndex[_tokenId];
     uint256 lastTokenIndex = balanceOf(_from).sub(1);
     uint256 lastToken = ownedTokens[_from][lastTokenIndex];
+    ownedTokens[_from][tokenIndex] = lastToken;
+    ownedTokens[_from][lastTokenIndex] = 0;
     ownedTokens[_from].length--;
     ownedTokensIndex[_tokenId] = 0;
     ownedTokensIndex[lastToken] = tokenIndex;
@@ -371,6 +371,8 @@ contract PrescriptionNFT is ERC721 {
     uint256 tokenIndex = issuedTokensIndex[_tokenId];
     uint256 lastTokenIndex = issuedTokens[_doctor].length.sub(1);
     uint256 lastToken = issuedTokens[_doctor][lastTokenIndex];
+    issuedTokens[_doctor][tokenIndex] = lastToken;
+    issuedTokens[_doctor][lastTokenIndex] = 0;
     issuedTokens[_doctor].length--;
     issuedTokensIndex[_tokenId] = 0;
     issuedTokensIndex[lastToken] = tokenIndex;
