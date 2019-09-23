@@ -205,13 +205,13 @@ class App extends Component {
     await this.getPrescriptions();
     let doctor = await this.state.ContractInstance.approvedDoctors(this.state.accounts[0]);
     this.setState({user: doctor.name});
-    console.log(doctor.name);
     //this.forceUpdate()
   }
 
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensIssued(this.state.accounts[0]);
     let transactionLogs = await Promise.all(tokens.reverse().map(this.getPrescription, this));
+    let d = await this.getPrescription(1);
     this.setState({transactionLogs: transactionLogs})
   };
 
@@ -225,12 +225,13 @@ class App extends Component {
       pzn: f.metadata.pzn,
       medicationName: f.metadata.medicationName,
       dosage: f.metadata.dosage,
-      dosageUnit: f.metadata.dosageUnit
+      dosageUnit: f.metadata.dosageUnit,
+      filled: f.filled
     };
   }
 
   async cancelPrescription(tx) {
-    let f = await this.state.ContractInstance.cancelPrescription(tx.id);
+    let f = await this.state.ContractInstance.cancelPrescription(tx.id.toNumber());
   }
 
   toggle() {
@@ -274,7 +275,11 @@ class App extends Component {
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>
           <Button color="primary" size="sm" onClick={() => { this.renew(tx) }}>Renew</Button>{' '}
-          <Button color="secondary" size="sm" onClick={() => { this.cancelPrescription(tx) }}>Cancel</Button>
+          { !tx.filled &&
+            <Button color="secondary" size="sm" onClick={() => {
+              this.cancelPrescription(tx)
+            }}>Cancel</Button>
+          }
         </td>
       </tr>
     )
@@ -306,12 +311,12 @@ class App extends Component {
         <Table>
           <thead>
             <tr>
-              <th>Patient address</th>
-              <th>PZN</th>
-              <th>Description</th>
-              <th>Expires at</th>
-              <th>Prescribed at</th>
-              <th>Actions</th>
+              <th width={"16%"}>Patient address</th>
+              <th width={"10%"}>PZN</th>
+              <th width={"34%"}>Description</th>
+              <th width={"10%"}>Expires at</th>
+              <th width={"15%"}>Prescribed at</th>
+              <th width={"15%"}>Actions</th>
             </tr>
           </thead>
           <tbody>

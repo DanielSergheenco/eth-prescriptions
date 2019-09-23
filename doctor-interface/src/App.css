@@ -14,3 +14,11 @@
     color: gray;
     margin-right: 15px;
 }
+
+table {
+    table-layout: fixed;
+}
+
+td {
+    overflow-wrap: break-word;
+}
