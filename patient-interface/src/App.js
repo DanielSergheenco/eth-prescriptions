@@ -147,7 +147,8 @@ class App extends Component {
     this.state = {
       modal: false,
       transactionLogs: [],
-      accounts: []
+      accounts: [],
+      loading: true,
     };
 
     this.toggle = this.toggle.bind(this);
@@ -166,7 +167,7 @@ class App extends Component {
   async getPrescriptions(page) {
     let tokens = await this.state.ContractInstance.tokensOf(this.state.accounts[0]);
     let transactionLogs = await Promise.all(tokens.reverse().map(this.getPrescription, this));
-    this.setState({transactionLogs: transactionLogs})
+    this.setState({transactionLogs: transactionLogs, loading: false})
   };
 
   async getPrescription(token) {
@@ -252,10 +253,18 @@ class App extends Component {
             <Media>
               <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQRAddress() }} name='user-circle' alt="User" size={"5x"}/>
               <Media body>
-                <h1>Hello,</h1>
+                <h1>Hello Patient,</h1>
+                { this.state.transactionLogs.length !== 0 &&
                 <h4>You've recently been prescribed.</h4>
+                }
+                { (!this.state.transactionLogs.length && !this.state.loading) &&
+                <h4>You don't have any unfilled prescriptions.</h4>
+                }
                 { this.state.accounts[0] !== undefined &&
-                  <p>Tap your profile icon to show your account address. <br />Tap the prescription to show medication information.</p>
+                  <p>Tap your profile icon to show your account address. <br /></p>
+                }
+                { this.state.transactionLogs.length  !== 0 &&
+                  <p>Tap the prescription to show medication information.</p>
                 }
               </Media>
             </Media>
