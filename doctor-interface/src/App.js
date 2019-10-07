@@ -39,12 +39,16 @@ class ModalForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      formState: { "dosage-unit": "ml" }
+      formState: { "dosage-unit": "ml" },
+      transactionTriggered: false
     };
   }
 
   async sendPrescription(e) {
     if(this.handleValidation()) {
+      this.setState({
+        transactionTriggered: true
+      });
       let tx = await this.props.state.ContractInstance.prescribe(
         this.state.formState["patient-address"],
         this.state.pzn,
@@ -61,6 +65,9 @@ class ModalForm extends Component {
     else{
       e.preventDefault();
     }
+    this.setState({
+      transactionTriggered: false
+    });
   }
 
   handleValidation(){
@@ -167,8 +174,15 @@ class ModalForm extends Component {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-          <Button color="primary" onClick={this.sendPrescription.bind(this)}>Send Prescription</Button>
+          <div className="container mt-0">
+            <div className="row">
+              <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
+              <Button className="col" color="primary" onClick={this.sendPrescription.bind(this)} disabled={this.state.transactionTriggered}>Send Prescription</Button>
+            </div>
+            {this.state.transactionTriggered &&
+            <div className="row mt-2"><p className="mb-0">Transaction was triggered. Please confirm it in MetaMask.</p></div>
+            }
+          </div>
         </ModalFooter>
       </Modal>
     );
@@ -186,6 +200,7 @@ class App extends Component {
     super(props);
     let pageSize = 5;
     this.state = {
+      loaded: false,
       modal: false,
       accounts: [],
       transactionLogs: [],
@@ -204,7 +219,10 @@ class App extends Component {
     this.state.ContractInstance = instance;
     await this.getPrescriptions();
     let doctor = await this.state.ContractInstance.approvedDoctors(this.state.accounts[0]);
-    this.setState({user: doctor.name});
+    this.setState({
+      user: doctor.name,
+      loaded: true
+    });
     //this.forceUpdate()
   }
 
@@ -265,8 +283,8 @@ class App extends Component {
     return (
       <tr key={tx.id}>
         <td>
-          <small>
-            {tx.patientWalletAddress}
+          <small  data-toggle="tooltip" data-placement="top" title={tx.patientWalletAddress}>
+            {tx.patientWalletAddress.substr(0, 20) + "..."}
           </small>
         </td>
         <td>{tx.pzn}</td>
@@ -291,47 +309,57 @@ class App extends Component {
         <strong style={{verticalAlign: "middle"}}>Doctor Portal</strong>
         <a href="http://trio.bayern" target="_blank" rel="noopener noreferrer"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
         <hr />
-        <div className="row position-relative">
-          <div className="col-md-6">
-            <Media>
-              <FontAwesome className="doctor-icon" object name='user-md' alt="User" size={"5x"}/>
-              <Media body>
-                <h1>Hello {this.state.user},</h1>
-                <h4>Your recent prescriptions.</h4>
-                <code>{this.state.accounts[0]}</code>
+        {(this.state.loaded && this.state.user) &&
+        <div>
+          <div className="row position-relative">
+            <div className="col">
+              <Media>
+                <FontAwesome className="doctor-icon" object name='user-md' alt="User" size={"5x"}/>
+                <Media body>
+                  <h1>Hello {this.state.user},</h1>
+                  <h4>Your recent prescriptions.</h4>
+                  <code>{this.state.accounts[0]}</code>
+                </Media>
               </Media>
-            </Media>
+            </div>
+            <div className="col-md-6 text-right position-absolute" style={{bottom: 0, right: 0}}>
+              <Button color="secondary" className="m-1" onClick={() => {
+                this.toggleQR()
+              }}><FontAwesome name='camera' className="mr-2"/> Scan patient address</Button>
+              <Button color="success" className="m-1" onClick={() => {
+                this.new(this)
+              }}>Create a prescription</Button>
+            </div>
           </div>
-          <div className="col-md-6 text-right position-absolute" style={{bottom: 0, right: 0}}>
-            <Button color="secondary" className="m-1" onClick= { ()=> { this.toggleQR() }}><FontAwesome name='camera' className="mr-2"/> Scan patient address</Button>
-            <Button color="success" className="m-1" onClick= { ()=> { this.new(this) }}>Create a prescription</Button>
-          </div>
-        </div>
-        <br />
-        <Table>
-          <thead>
-            <tr>
-              <th width={"16%"}>Patient address</th>
-              <th width={"10%"}>PZN</th>
-              <th width={"34%"}>Description</th>
-              <th width={"10%"}>Expires at</th>
-              <th width={"15%"}>Prescribed at</th>
-              <th width={"15%"}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.transactionLogs
-              .slice(this.state.fromItem, this.state.toItem + 1)
-              .map(this.renderTableRow.bind(this))}
-          </tbody>
-        </Table>
-        <Paginationbar
-          totalItems={this.state.transactionLogs.length}
-          pageSize={this.state.pageSize}
-          onTurnPage={e => this.setState(e)}
-        />
-        <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state} onClosed={this.getPrescriptions}/>
-        <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
+          <br />
+          <Table>
+            <thead>
+              <tr>
+                <th width={"16%"}>Patient address</th>
+                <th width={"10%"}>PZN</th>
+                <th width={"34%"}>Description</th>
+                <th width={"10%"}>Expires at</th>
+                <th width={"15%"}>Prescribed at</th>
+                <th width={"15%"}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.transactionLogs
+                .slice(this.state.fromItem, this.state.toItem + 1)
+                .map(this.renderTableRow.bind(this))}
+            </tbody>
+          </Table>
+          <Paginationbar
+            totalItems={this.state.transactionLogs.length}
+            pageSize={this.state.pageSize}
+            onTurnPage={e => this.setState(e)}
+          />
+          <ModalForm visibility={this.state.modal} toggle={this.toggle} input={this.state.prior} state={this.state} onClosed={this.getPrescriptions}/>
+          <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
+        </div> }
+        {(this.state.loaded && !this.state.user) &&
+          <h1>You do not have Doctor permissions on this account.</h1>
+        }
       </div>
     );
   }

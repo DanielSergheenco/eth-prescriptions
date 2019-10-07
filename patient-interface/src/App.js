@@ -29,22 +29,30 @@ class ModalForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      formState: {}
+      formState: {},
+      transactionTriggered: false
     };
   }
   async fill() {
     try {
+      this.setState({
+        transactionTriggered: true
+      });
+
       let tx = await this.props.state.ContractInstance.fillPrescription(
         this.state.formState["pharmacy-address"],
         this.props.state.tokenId
       );
+      console.log(tx);
 
       this._reactInternalFiber._debugOwner.stateNode.updatePrescription(this.props.state.tokenId);
-      this.props.toggle();
     }
     catch(err){ //User denied signature
-      this.props.toggle();
     }
+    this.props.toggle();
+    this.setState({
+      transactionTriggered: false
+    });
   }
 
   inputUpdate(event) {
@@ -66,8 +74,15 @@ class ModalForm extends Component {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-          <Button color="primary" onClick={this.fill.bind(this)}>Fill Prescription</Button>
+          <div className="container mt-0">
+            <div className="row">
+            <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
+            <Button className="col" color="primary" onClick={this.fill.bind(this)} disabled={this.state.transactionTriggered}>Fill Prescription</Button>
+            </div>
+            {this.state.transactionTriggered &&
+              <div className="row mt-2"><p className="mb-0">Transaction was triggered. Please confirm it in MetaMask.</p></div>
+            }
+          </div>
         </ModalFooter>
       </Modal>
     );
@@ -98,7 +113,6 @@ class DrugModal  extends Component {
   }
   initDrug(){
     let drug = drugs.filter(f => f.PZN == this.props.pzn);
-    console.log(drugs.length);
     if(drug.length > 0){
       drug = drug[0];
     }
@@ -227,7 +241,7 @@ class App extends Component {
         <td>{tx.id}</td>
         <td>{
           drugs.filter(f => f.PZN == tx.pzn).length > 0 &&
-          (<FontAwesome className="info-circle clickable" onClick={ ()=> { this.showDrug(tx.pzn) }} name='info-circle' alt="User" size={"1x"} style={{paddingRight: 5}}/>)
+          (<FontAwesome className="info-circle clickable" onClick={ ()=> { this.showDrug(tx.pzn) }} name='info-circle' alt="User" style={{paddingRight: 5}}/>)
         }
           {tx.dosage}{tx.dosageUnit} of {tx.medicationName}</td>
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
@@ -235,7 +249,7 @@ class App extends Component {
         <td>
         {tx.filled ? 
           <Button color="default" size="sm" disabled>Prescription filled</Button> :
-          <Button color="success" size="sm" onClick={() => {this.fill(tx)}}>Fill prescription</Button>
+          <Button color="success" size="sm" className="btn-block" onClick={() => {this.fill(tx)}}>Fill prescription</Button>
         }
         </td>
       </tr>
