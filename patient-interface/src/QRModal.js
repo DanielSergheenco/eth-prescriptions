@@ -51,6 +51,11 @@ export default class QRModal extends Component {
         <ModalHeader>Your Account Address</ModalHeader>
         <ModalBody>
           <div>
+            { this.state && this.state.result ?
+              <p><FontAwesome name='check-circle'/> {this.state.result}<br/>
+                {this.state.count.toString()} previous prescriptions filled with this pharmacy.</p> :
+              <p><FontAwesome name='times-circle'/> Not a valid address.</p>
+            }
             { this.state.showScanner ?
               <div>
                 <QrReader
@@ -60,15 +65,10 @@ export default class QRModal extends Component {
                   style={{width: '100%'}}
                 />
               </div> :
-              <div>
-                <Button color="success" className="m-1" onClick={this.toggle}>Accept</Button>
-                <Button color="secondary" className="m-1" onClick={() => { this.rescan() }}>Rescan</Button>
+              <div className="row m-0">
+                <Button color="success" className="col text-center align-middle mr-1" onClick={this.toggle}><FontAwesome name='check'/> Accept</Button>
+                <Button color="secondary" className="col text-center align-middle ml-1" onClick={() => { this.rescan() }}><FontAwesome name='repeat'/> Rescan</Button>
               </div>
-            }<br/>
-            { this.state && this.state.result ?
-              <p><FontAwesome name='check-circle'/> {this.state.result}<br/>
-                {this.state.count.toString()} previous prescriptions filled with this pharmacy.</p> :
-              <p><FontAwesome name='times-circle'/> Not a valid address.</p>
             }
           </div>
         </ModalBody>
