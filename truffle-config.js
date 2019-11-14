@@ -50,12 +50,11 @@ module.exports = {
 
     // Another network with more advanced options...
     pi: {
-      host: "132.199.123.187",
+      host: "132.199.123.236",
       port: 8501,             // Custom port
       network_id: 2101993,       // Custom network
       gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
       gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-      from: "0x640d1983d409aaef2d7f5fd239aad31c3e084669"       // Account to send txs from (default: accounts[0])
       //websockets: true        // Enable EventEmitter interface for web3 (default: false)
     },
 
@@ -65,7 +64,6 @@ module.exports = {
       network_id: 1778,       // Custom network
       gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
       gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-      from: "0x6817056d4c69eb9cbf0d64d1594792a93e70bae4"       // Account to send txs from (default: accounts[0])
       //websockets: true        // Enable EventEmitter interface for web3 (default: false)
     },
 

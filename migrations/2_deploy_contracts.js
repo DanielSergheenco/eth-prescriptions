@@ -7,6 +7,6 @@ module.exports = function(deployer, network, accounts) {
           ["Dr. med. Bob Smith", "Dr. med. Michael Brown"]);
     }
     else {
-        deployer.deploy(contract, ["0xe95f524fbe1443c2cfeEBE60bF4a6B17BE0f0D72"], ["Dr. Hofer"], {from: "0x6817056d4c69eb9cbf0d64d1594792a93e70bae4"})
+        deployer.deploy(contract, ["0xe95f524fbe1443c2cfeEBE60bF4a6B17BE0f0D72"], ["Dr. Hofer"])
     }
 };
