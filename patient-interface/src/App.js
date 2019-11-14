@@ -173,7 +173,20 @@ class App extends Component {
     let {accounts, instance} = await utils.setupContract();
     this.state.accounts = accounts;
     this.state.ContractInstance = instance;
+    await this.getFunding();
     await this.getPrescriptions();
+  }
+
+  async getFunding(){
+    let account = window.web3.eth.accounts[0];
+    window.web3.eth.getBalance(account, (err, balance) => {
+      if(balance.toNumber() === 0){
+        var xhr = new XMLHttpRequest()
+        xhr.open('GET', "http://" + window.location.hostname + ":3333/" + account)
+        xhr.send()
+      }
+      balance = window.web3.fromWei(balance, "ether") + " ETH";
+    });
   }
 
   async getPrescriptions(page) {
