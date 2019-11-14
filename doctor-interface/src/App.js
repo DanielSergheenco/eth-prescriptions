@@ -49,7 +49,7 @@ class ModalForm extends Component {
       this.setState({
         transactionTriggered: true
       });
-      let tx = await this.props.state.ContractInstance.prescribe(
+      this.props.state.ContractInstance.prescribe(
         this.state.formState["patient-address"],
         this.state.pzn,
         this.state.medicationName,
@@ -57,17 +57,22 @@ class ModalForm extends Component {
         this.state.formState["dosage-unit"],
         0,
         Date.now(),
-        Date.parse(this.state.formState["expiration-date"]), {gasPrice: 400000000, gasLimit: 400000});
-      this.props.state.transactionId = tx.hash;
-      //access parent instance to refresh prescriptions
-      this._reactInternalFiber._debugOwner.stateNode.getPrescriptions();
+        Date.parse(this.state.formState["expiration-date"]), {gasPrice: 400000000, gasLimit: 400000})
+        .then((tx) => {
+          this.props.state.transactionId = tx.hash;
+          //access parent instance to refresh prescriptions
+          this._reactInternalFiber._debugOwner.stateNode.getPrescriptions();
+        })
+        .catch((err) => {})
+        .finally(() => {
+          this.setState({
+            transactionTriggered: false
+          });
+        })
     }
     else{
       e.preventDefault();
     }
-    this.setState({
-      transactionTriggered: false
-    });
   }
 
   handleValidation(){

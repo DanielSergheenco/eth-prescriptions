@@ -34,25 +34,23 @@ class ModalForm extends Component {
     };
   }
   async fill() {
-    try {
-      this.setState({
-        transactionTriggered: true
-      });
-
-      let tx = await this.props.state.ContractInstance.fillPrescription(
-        this.state.formState["pharmacy-address"],
-        this.props.state.tokenId
-      );
-      console.log(tx);
-
-      this._reactInternalFiber._debugOwner.stateNode.updatePrescription(this.props.state.tokenId);
-    }
-    catch(err){ //User denied signature
-    }
-    this.props.toggle();
     this.setState({
-      transactionTriggered: false
+      transactionTriggered: true
     });
+
+    this.props.state.ContractInstance.fillPrescription(
+      this.state.formState["pharmacy-address"],
+      this.props.state.tokenId
+    ).then((tx) => {
+      this._reactInternalFiber._debugOwner.stateNode.updatePrescription(this.props.state.tokenId);
+      this.props.toggle();
+    })
+    .catch((err) => {})
+    .finally(() => {
+      this.setState({
+        transactionTriggered: false
+      });
+    })
   }
 
   inputUpdate(event) {
