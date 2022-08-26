@@ -23,6 +23,12 @@ import {
 let QRCode = require('qrcode.react');
 let FontAwesome = require('react-fontawesome');
 
+require('@metamask/legacy-web3');
+
+const { web3 } = window;
+const selectedAddress = web3.eth.defaultAccount;
+
+
 let utils = require('./utils.js');
 
 class ModalForm extends Component {

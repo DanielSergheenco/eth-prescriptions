@@ -1,6 +1,8 @@
 <b>Note:</b> This project is a fork that fixes bugs in the outdated "eth-prescriptions" and enables it to work with latest MetaMask and Solidity versions. Truffle was added for simplified contract development and the contract is covered with JavaScript tests.
 Further enhancements to the original project's functionality are planned.  
 
+<b>IMPORTANT> need to install metamask/legacy-web3> npm i @metamask/legacy-web3</b>
+
 # eth-prescriptions - Decentralized medical prescriptions on Ethereum
 
 <b>eth-prescriptions</b> is a decentralized identity management and pharmaceutical ERP system built atop a permissioned Ethereum consortium network.  This project implements a non-fungible token standard to completely eliminate the <i>risk</i> and <i>implicit costs</i> associated with pharmaceutical script fraud.

@@ -18,6 +18,12 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Paginationbar } from 'reactstrap-paginationbar';
 
+require('@metamask/legacy-web3');
+
+const { web3 } = window;
+const selectedAddress = web3.eth.defaultAccount;
+
+
 import {
   Button,
   Form,
@@ -109,7 +115,7 @@ class ModalForm extends Component {
     if (this.props.state.transactionId) {
     let html = (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
-        <ModalHeader toggle={this.props.toggle}><FontAwesome name='check-circle'/> Your prescription has been sent!</ModalHeader>
+        <ModalHeader toggle={this.props.toggle}><FontAwesome name='check-circle'/> Prescriptia a fost trimisa</ModalHeader>
         <ModalBody>
           <p>Your prescription has successfully been sent to the patient and is available at the following transaction address: <code>{this.props.state.transactionId}</code></p>
         </ModalBody>

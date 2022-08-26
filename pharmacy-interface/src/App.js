@@ -20,6 +20,12 @@ let QRCode = require('qrcode.react');
 let FontAwesome = require('react-fontawesome');
 let utils = require('./utils.js');
 
+require('@metamask/legacy-web3');
+
+const { web3 } = window;
+const selectedAddress = web3.eth.defaultAccount;
+
+
 class QRModal extends Component {
   constructor(props) {
     super(props);
