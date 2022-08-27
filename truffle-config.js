@@ -49,14 +49,14 @@ module.exports = {
     },
 
     // Another network with more advanced options...
-    pi: {
-      host: "132.199.123.236",
-      port: 8501,             // Custom port
-      network_id: 2101993,       // Custom network
-      gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
-      gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-      //websockets: true        // Enable EventEmitter interface for web3 (default: false)
-    },
+   // pi: {
+   //   host: "132.199.123.236",
+   //   port: 8501,             // Custom port
+   //   network_id: 2101993,       // Custom network
+   //   gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
+   //   gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
+   //   //websockets: true        // Enable EventEmitter interface for web3 (default: false)
+   // },
 
     weiden: {
       host: "localhost",
