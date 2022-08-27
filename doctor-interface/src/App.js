@@ -117,23 +117,23 @@ class ModalForm extends Component {
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
         <ModalHeader toggle={this.props.toggle}><FontAwesome name='check-circle'/> Prescriptia a fost trimisa</ModalHeader>
         <ModalBody>
-          <p>Your prescription has successfully been sent to the patient and is available at the following transaction address: <code>{this.props.state.transactionId}</code></p>
+          <p>Prescripția a fost trimisă cu succes la pacient și este disponibilă la adresa: <code>{this.props.state.transactionId}</code></p>
         </ModalBody>
       </Modal>);
     return html;
     } else {
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
-        <ModalHeader toggle={this.props.toggle}>Create a prescription</ModalHeader>
+        <ModalHeader toggle={this.props.toggle}>Crează o prescripție</ModalHeader>
         <ModalBody>
           <Form onInput={this.inputUpdate.bind(this)} tooltip="">
             <FormGroup>
-              <Label for="exampleEmail">Patient wallet address</Label>
-              <Input type="text" name="patient-address"  value={this.state.formState["patient-address"] || ""} placeholder="0x123f681646d4a755815f9cb19e1acc8565a0c2ac" required valid invalid={!window.web3.isAddress(this.state.formState["patient-address"])}/>
-              <FormFeedback>Not a valid address</FormFeedback>
+              <Label for="exampleEmail">Adresa pacientului</Label>
+              <Input type="text" name="patient-address"  value={this.state.formState["patient-address"] || ""} placeholder="ex: 0x123f681646d4a755815f9cb19e1acc8565a0c2ac" required valid invalid={!window.web3.isAddress(this.state.formState["patient-address"])}/>
+              <FormFeedback>Adresă invalidă</FormFeedback>
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">PZN</Label>
+              <Label for="exampleEmail">Cod bare</Label>
               <Autocomplete
                 getItemValue={(item) => item.label}
                 items={ drugs.map(function(drug){
@@ -162,36 +162,36 @@ class ModalForm extends Component {
               />
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Medication Name</Label>
+              <Label for="exampleEmail">Medicament</Label>
               <Input type="text" name="medication-name"  value={this.state.medicationName || ""} required/>
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Dosage</Label>
+              <Label for="exampleEmail">Doza</Label>
               <Input type="number" name="dosage-quantity"  value={this.state.formState["dosage-quantity"] || ""} required/>
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Dosage Unit</Label>
+              <Label for="exampleEmail">Unitate de măsură</Label>
               <Input on type="select" name="dosage-unit"  value={this.state.formState["dosage-unit"] || ""} required>
                 <option value="ml">ml</option>
                 <option value="mg">mg</option>
-                <option value="tablets">tablets</option>
+                <option value="tablets">pastile</option>
               </Input>
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Expiration Date</Label>
+              <Label for="exampleEmail">Data expirării</Label>
               <Input type="date" min={(new Date((new Date()).getTime() + (7*60*60*24*1000))).toISOString().substr(0,10)} name="expiration-date" placeholder=""  value={this.state.formState["expiration-date"] || ""} invalid={this.state.formState["expiration-date"] == null || this.state.formState["expiration-date"] === ""} required/>
-                <FormFeedback>Not a valid date</FormFeedback>
+                <FormFeedback>Data invalidă</FormFeedback>
             </FormGroup>
           </Form>
         </ModalBody>
         <ModalFooter>
           <div className="container mt-0">
             <div className="row">
-              <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-              <Button className="col" color="primary" onClick={this.sendPrescription.bind(this)} disabled={this.state.transactionTriggered}>Send Prescription</Button>
+              <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Anulare</Button>{' '}
+              <Button className="col" color="primary" onClick={this.sendPrescription.bind(this)} disabled={this.state.transactionTriggered}>Trimite prescripția</Button>
             </div>
             {this.state.transactionTriggered &&
-            <div className="row mt-2"><p className="mb-0">Transaction was triggered. Please confirm it in MetaMask.</p></div>
+            <div className="row mt-2"><p className="mb-0">Tranzacție inițializată. Confirmați în MetaMask</p></div>
             }
           </div>
         </ModalFooter>
@@ -303,11 +303,11 @@ class App extends Component {
         <td>{new Date(tx.expiryTime).toLocaleDateString("en-US")}</td>
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>
-          <Button color="primary" size="sm" onClick={() => { this.renew(tx) }}>Renew</Button>{' '}
+          <Button color="primary" size="sm" onClick={() => { this.renew(tx) }}>Reînoiește</Button>{' '}
           { !tx.filled &&
             <Button color="secondary" size="sm" onClick={() => {
               this.cancelPrescription(tx)
-            }}>Cancel</Button>
+            }}>Anulează</Button>
           }
         </td>
       </tr>
@@ -326,31 +326,31 @@ class App extends Component {
               <Media>
                 <FontAwesome className="doctor-icon" object name='user-md' alt="User" size={"5x"}/>
                 <Media body>
-                  <h1>Hello {this.state.user},</h1>
-                  <h4>Your recent prescriptions.</h4>
-                  <code>{this.state.accounts[0]}</code>
+                  <h1>Salut {this.state.user},</h1>
+                  <h4>Prescripțiile tale recente</h4>
+                  Adresa mea: <code>{this.state.accounts[0]}</code>
                 </Media>
               </Media>
             </div>
             <div className="col-md-6 text-right position-absolute" style={{bottom: 0, right: 0}}>
               <Button color="secondary" className="m-1" onClick={() => {
                 this.toggleQR()
-              }}><FontAwesome name='camera' className="mr-2"/> Scan patient address</Button>
+              }}><FontAwesome name='camera' className="mr-2"/> Scanează adresa pacientului</Button>
               <Button color="success" className="m-1" onClick={() => {
                 this.new(this)
-              }}>Create a prescription</Button>
+              }}>Prescrie medicamente</Button>
             </div>
           </div>
           <br />
           <Table>
             <thead>
               <tr>
-                <th width={"16%"}>Patient address</th>
-                <th width={"10%"}>PZN</th>
-                <th width={"34%"}>Description</th>
-                <th width={"10%"}>Expires at</th>
-                <th width={"15%"}>Prescribed at</th>
-                <th width={"15%"}>Actions</th>
+                <th width={"16%"}>Adresă pacient</th>
+                <th width={"10%"}>Cod Bare</th>
+                <th width={"34%"}>Descriere</th>
+                <th width={"10%"}>Expiră la</th>
+                <th width={"15%"}>Prescris la</th>
+                <th width={"15%"}>Acțiuni</th>
               </tr>
             </thead>
             <tbody>
@@ -368,7 +368,7 @@ class App extends Component {
           <QRModal visibility={this.state.modalQR} toggle={this.toggleQR} state={this.state} onScan={this.saveAddress}/>
         </div> }
         {(this.state.loaded && !this.state.user) &&
-          <h1>You do not have Doctor permissions on this account.</h1>
+          <h1>Nu aveți suficiente drepturi pentru a face prescrieri medicale! Contactați autoritatea competentă pentru a remedia problema.</h1>
         }
       </div>
     );

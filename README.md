@@ -2,6 +2,9 @@
 Further enhancements to the original project's functionality are planned.  
 
 <b>IMPORTANT> need to install metamask/legacy-web3> npm i @metamask/legacy-web3</b>
+To compile smart contract you need to create in root directory> build/contracts
+to compile contracts use> truffle compile
+to deploy it in blochckain use> truffle migrate
 
 # eth-prescriptions - Decentralized medical prescriptions on Ethereum
 
