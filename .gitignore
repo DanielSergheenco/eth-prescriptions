@@ -55,7 +55,6 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-.env
 package-lock.json
 pnpm-lock.yaml
 build/
