@@ -1,10 +1,10 @@
 <b>Note:</b> This project is a fork that fixes bugs in the outdated "eth-prescriptions" and enables it to work with latest MetaMask and Solidity versions. Truffle was added for simplified contract development and the contract is covered with JavaScript tests.
 Further enhancements to the original project's functionality are planned.  
 
-<b>IMPORTANT> need to install metamask/legacy-web3> npm i @metamask/legacy-web3</b>
-To compile smart contract you need to create in root directory> build/contracts
-to compile contracts use> truffle compile
-to deploy it in blochckain use> truffle migrate
+<b>IMPORTANT> need to install metamask/legacy-web3> npm i @metamask/legacy-web3</b><br>
+To compile smart contract you need to create in root directory> build/contracts <br>
+to compile contracts use> truffle compile<br>
+to deploy it in blochckain use> truffle migrate<br>
 
 # eth-prescriptions - Decentralized medical prescriptions on Ethereum
 
