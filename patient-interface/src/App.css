@@ -1,10 +1,15 @@
+
+body{
+    background-image: url("/background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: -999;
+} 
+
 .container {
-    margin-top: 20px;
+
 }
-body {
-  background-color: #efefef;
-  border-top: 4px solid #aaa;
-}
+
 
 .user-icon {
     width: 100px;

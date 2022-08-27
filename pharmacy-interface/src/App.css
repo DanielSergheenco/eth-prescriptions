@@ -1,5 +1,13 @@
+
+body{
+    background-image: url("/background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: -999;
+} 
+
 .container {
-    margin-top: 20px;
+
 }
 
 .user-icon {

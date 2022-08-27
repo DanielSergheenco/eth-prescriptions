@@ -276,8 +276,7 @@ class App extends Component {
   render() {
     return (
       <div className="App container">
-        <strong>Patient Portal</strong>
-        <a href="http://trio.bayern" target="_blank"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
+       <Media object src="./banner.png" width="100%"/>
         <hr />
         <div className="row  position-relative">
           <div className="col-md-8">

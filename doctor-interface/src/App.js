@@ -317,8 +317,7 @@ class App extends Component {
   render() {
     return (
       <div className="App container">
-        <strong style={{verticalAlign: "middle"}}>Doctor Portal</strong>
-        <a href="http://trio.bayern" target="_blank" rel="noopener noreferrer"><Media object src="./logo.svg" style={{ marginRight: 15 }} height="30px" align="right"/></a>
+        <Media object src="./banner.png" width="100%"/>
         <hr />
         {(this.state.loaded && this.state.user) &&
         <div>
