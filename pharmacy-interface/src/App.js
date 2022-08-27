@@ -33,7 +33,7 @@ class QRModal extends Component {
   render () {
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
-        <ModalHeader toggle={this.props.toggle}>Your Account Address</ModalHeader>
+        <ModalHeader toggle={this.props.toggle}>Adresa portofelului tău</ModalHeader>
         <ModalBody>
           <code>{this.props.account}</code><br />< br/>
           <QRCode size="512" value={this.props.account} style={{width: "100%"}}/>
@@ -136,10 +136,10 @@ class App extends Component {
             <Media>
               <FontAwesome className="clickable user-icon" onClick={() => { this.toggleQR() }} name='heartbeat' alt="User" size={"5x"}/>
               <Media body>
-                <h1>Hello, </h1>
-                <h4>Prescription tokens transferred by patients:</h4>
+                <h1>Salut, </h1>
+                <h4>Listă prescripții de la clienți:</h4>
                 { this.state.accounts[0] !== undefined &&
-                  <p>Tap your profile icon to show your account address.</p>
+                  <p>Apasă pe poza de profil pentru a vedea adresa farmaciei.</p>
                 }
               </Media>
             </Media>
@@ -153,11 +153,11 @@ class App extends Component {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Patient address</th>
-              <th>PZN</th>
-              <th>Description</th>
-              <th>Expires at</th>
-              <th>Prescribed at</th>
+              <th>Adresă client</th>
+              <th>Cond de bare</th>
+              <th>Descriere</th>
+              <th>Expiră la</th>
+              <th>Prescris la</th>
             </tr>
           </thead>
           <tbody>

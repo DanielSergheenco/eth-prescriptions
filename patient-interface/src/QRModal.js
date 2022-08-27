@@ -48,13 +48,13 @@ export default class QRModal extends Component {
   render () {
     return (
       <Modal isOpen={this.props.visibility} toggle={this.toggle}>
-        <ModalHeader>Your Account Address</ModalHeader>
+        <ModalHeader>Scanează adresa farmaciei</ModalHeader>
         <ModalBody>
           <div>
             { this.state && this.state.result ?
               <p><FontAwesome name='check-circle'/> {this.state.result}<br/>
-                {this.state.count.toString()} previous prescriptions filled with this pharmacy.</p> :
-              <p><FontAwesome name='times-circle'/> Not a valid address.</p>
+                {this.state.count.toString()} prescripțiile utilizate la această farmacie.</p> :
+              <p><FontAwesome name='times-circle'/> Adresă invalidă.</p>
             }
             { this.state.showScanner ?
               <div>
@@ -66,7 +66,7 @@ export default class QRModal extends Component {
                 />
               </div> :
               <div className="row m-0">
-                <Button color="success" className="col text-center align-middle mr-1" onClick={this.toggle}><FontAwesome name='check'/> Accept</Button>
+                <Button color="success" className="col text-center align-middle mr-1" onClick={this.toggle}><FontAwesome name='check'/> Acceptă</Button>
                 <Button color="secondary" className="col text-center align-middle ml-1" onClick={() => { this.rescan() }}><FontAwesome name='repeat'/> Rescan</Button>
               </div>
             }

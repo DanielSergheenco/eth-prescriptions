@@ -68,11 +68,11 @@ class ModalForm extends Component {
     if(this.props.state.address) this.state.formState["pharmacy-address"] = this.props.state.address;
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
-        <ModalHeader toggle={this.props.toggle}>Fill a prescription</ModalHeader>
+        <ModalHeader toggle={this.props.toggle}>Utilizează prescripția</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="exampleEmail">Pharmacy wallet address:</Label>
+              <Label for="exampleEmail">Adresa farmaciei:</Label>
               <Input type="text" name="pharmacy-address" onChange={this.inputUpdate.bind(this)} value={this.state.formState["pharmacy-address"] || ""} placeholder="0x123f681646d4a755815f9cb19e1acc8565a0c2ac" />
             </FormGroup>
           </Form>
@@ -80,11 +80,11 @@ class ModalForm extends Component {
         <ModalFooter>
           <div className="container mt-0">
             <div className="row">
-            <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Cancel</Button>{' '}
-            <Button className="col" color="primary" onClick={this.fill.bind(this)} disabled={this.state.transactionTriggered}>Fill Prescription</Button>
+            <Button className="col mr-1" color="secondary" onClick={this.props.toggle}>Anulare</Button>{' '}
+            <Button className="col" color="primary" onClick={this.fill.bind(this)} disabled={this.state.transactionTriggered}>Trimite</Button>
             </div>
             {this.state.transactionTriggered &&
-              <div className="row mt-2"><p className="mb-0">Transaction was triggered. Please confirm it in MetaMask.</p></div>
+              <div className="row mt-2"><p className="mb-0">Tranzactia a fost initiata. Confirmati in Metamask!</p></div>
             }
           </div>
         </ModalFooter>
@@ -129,25 +129,25 @@ class DrugModal  extends Component {
     this.initDrug();
     return (
       <Modal isOpen={this.props.visibility} toggle={this.props.toggle}>
-        <ModalHeader toggle={this.props.toggle}>Prescription Information</ModalHeader>
+        <ModalHeader toggle={this.props.toggle}>Informații despre medicament</ModalHeader>
         <ModalBody>
-          <p><strong>Medikament</strong><br/>
+          <p><strong>Medicament</strong><br/>
             {this.state.drug['Medikament']}</p>
           <p><strong>Firma</strong><br/>
             {this.state.drug['Firma']}</p>
-          <p><strong>Hinweise</strong><br/>
+          <p><strong>Sugestii</strong><br/>
             {this.state.drug['Hinweise']}</p>
-          <p><strong>Zusammensetzung</strong><br/>
+          <p><strong>Compoziție</strong><br/>
             {this.state.drug['Zusammensetzung (Zus.):']}</p>
-          <p><strong>Packungsangaben</strong><br/>
+          <p><strong>Conținut</strong><br/>
             {this.state.drug['Packungsangaben']}</p>
-          <p><strong>AVP/UVP</strong><br/>
+          <p><strong>Preț recomandat</strong><br/>
             {this.state.drug['AVP/UVP (EUR)']} EUR</p>
-          <p><strong>PZN</strong><br/>
+          <p><strong>Cod bare</strong><br/>
             {this.state.drug['PZN']}</p>
-          <p><strong>Anwendungsgebiete</strong><br/>
+          <p><strong>Domenii de aplicare</strong><br/>
             {this.state.drug['Anwendungsgebiete']}</p>
-          <p><strong>Dosierung</strong><br/>
+          <p><strong>Dozare</strong><br/>
             {this.state.drug['Dosierung']}</p>
         </ModalBody>
       </Modal>
@@ -265,8 +265,8 @@ class App extends Component {
         <td>{new Date(tx.prescribedAt).toLocaleDateString("en-US")}</td>
         <td>
         {tx.filled ? 
-          <Button color="default" size="sm" disabled>Prescription filled</Button> :
-          <Button color="success" size="sm" className="btn-block" onClick={() => {this.fill(tx)}}>Fill prescription</Button>
+          <Button color="default" size="sm" disabled>Prescriptie utilizată</Button> :
+          <Button color="success" size="sm" className="btn-block" onClick={() => {this.fill(tx)}}>Utilizează prescripție </Button>
         }
         </td>
       </tr>
@@ -283,24 +283,24 @@ class App extends Component {
             <Media>
               <FontAwesome className="user-icon clickable" onClick={() => { this.toggleQRAddress() }} name='user-circle' alt="User" size={"5x"}/>
               <Media body>
-                <h1>Hello Patient,</h1>
+                <h1>Salut Pacient,</h1>
                 { this.state.transactionLogs.length !== 0 &&
-                <h4>You've recently been prescribed.</h4>
+                <h4>Ai prescripții medicale valide.</h4>
                 }
                 { (!this.state.transactionLogs.length && !this.state.loading) &&
-                <h4>You don't have any unfilled prescriptions.</h4>
+                <h4>La moment nu ai prescripții valide.</h4>
                 }
                 { this.state.accounts[0] !== undefined &&
-                  <p>Tap your profile icon to show your account address. <br /></p>
+                  <p>Apasă pe poza de profil pentru a vizualiza adresa. <br /></p>
                 }
                 { this.state.transactionLogs.length  !== 0 &&
-                  <p>Tap the prescription to show medication information.</p>
+                  <p>Apasă pe prescripți pentru a vizualiza detaliile.</p>
                 }
               </Media>
             </Media>
           </div>
           <div className="col-md-4 text-right position-absolute" style={{bottom: 0, right: 0}}>
-            <Button color="secondary" className="m-1" onClick= { ()=> { this.toggleQR() }}><FontAwesome name='camera' className="mr-2"/> Scan pharmacy address</Button>
+            <Button color="secondary" className="m-1" onClick= { ()=> { this.toggleQR() }}><FontAwesome name='camera' className="mr-2"/> Scanează farmacia</Button>
           </div>
         </div>
         <br />
@@ -308,10 +308,10 @@ class App extends Component {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Description</th>
-              <th>Expires at</th>
-              <th>Prescribed at</th>
-              <th>Actions</th>
+              <th>Descriere</th>
+              <th>Expiră la</th>
+              <th>Prescris la</th>
+              <th>Acțiuni</th>
             </tr>
           </thead>
           <tbody>
