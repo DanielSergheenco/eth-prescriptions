@@ -1,0 +1,6 @@
+test_recording:
+  test_commands:
+    - env: {}
+      command: npm start
+remote_recording:
+  path: /localhost/

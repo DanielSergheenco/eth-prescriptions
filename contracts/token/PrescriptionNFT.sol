@@ -14,34 +14,35 @@ contract PrescriptionNFT is ERC721 {
 
   address public owner;
 
-  struct PrescriptionMetadata {
-    //address of doctor that issued this prescription
+struct PrescriptionMetadata {
+    //adresa medicului care prescrie
     address doctor;
-    //address of Patient that receives this prescription
+    //adresa pacientului care primeste
     address prescribedPatient;
-    //PZN of medication (8 digits)
+    //Codul de bare al medicamentului
     string pzn;
-    //Scientific name of the medicine
+    //Numele medicamentului
     string medicationName;
-    //payload per pill
+    //Dozarea
     uint8 dosage;
-    //Unit for the dosage (mg, `ml, etc)
+    //Unitatea de masura
     string dosageUnit;
-    //Number of pills to give in the prescription
+    //Numarul de pastile
     uint8 numPills;
-    //Epoch time when the prescription was given (mint time)
+    //data la care s-a prescris
     uint256 dateFilled;
-    //Epoch expiration date (When is this prescription no longer valid)
+    //Data expirarii presciptiei
     uint256 expirationTime;
   }
 
+//Metadatele pentru o prescriptie
   struct Prescription {
     PrescriptionMetadata metadata;
     address owner;
     bool filled;
   }
 
-  //metadata for a Doctor
+  //Metadatele pentru validarea medicului
   struct Doctor {
     string name;
     bool isValid;

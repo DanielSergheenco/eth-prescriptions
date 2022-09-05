@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@appland/scanner": "^1.70.0"
+  }
+}

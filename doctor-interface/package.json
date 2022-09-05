@@ -5,6 +5,7 @@
   "prefix": "../node_modules",
   "private": true,
   "dependencies": {
+    "@appland/appmap-agent-js": "^11.2.0",
     "@metamask/legacy-web3": "^2.0.0",
     "bootstrap": "^4.0.0",
     "ethers": "^4.0.36",

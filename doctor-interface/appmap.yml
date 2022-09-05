@@ -1,0 +1,7 @@
+name: doctor-interface
+packages:
+  - path: ''
+test_recording:
+  test_commands:
+    - env: {}
+      command: npm start

@@ -1,7 +1,7 @@
 @echo
 cd doctor-interface
 start cmd /k "npm start"
-timeout 2
+timeout 5
 cd ../pharmacy-interface
 start cmd /k "npm start"
 timeout 5
