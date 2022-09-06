@@ -142,7 +142,7 @@ class DrugModal  extends Component {
           <p><strong>Conținut</strong><br/>
             {this.state.drug['Packungsangaben']}</p>
           <p><strong>Preț recomandat</strong><br/>
-            {this.state.drug['AVP/UVP (EUR)']} EUR</p>
+            {this.state.drug['AVP/UVP (EUR)']} RON</p>
           <p><strong>Cod bare</strong><br/>
             {this.state.drug['PZN']}</p>
           <p><strong>Domenii de aplicare</strong><br/>
